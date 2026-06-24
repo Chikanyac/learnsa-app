@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LearnSA — Admin Licence Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --green:#007A4D; --blue:#002395; --gold:#FFB81C;
+  --bg:#f5f7fb; --white:#fff; --text:#142034; --muted:#6a7688;
+  --border:#e5e9f2; --shadow:0 8px 24px rgba(0,35,149,.08);
+  --red:#d92d20;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased;
+}
+header{
+  position:sticky; top:0; z-index:20;
+  background:linear-gradient(90deg,var(--blue),#001a70);
+  color:#fff; box-shadow:var(--shadow);
+}
+.head-inner{max-width:1200px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.2px}
+.logo{width:38px;height:38px;border-radius:12px;background:var(--green);display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
+.brand .t span{color:var(--gold)}
+.user{display:flex;align-items:center;gap:10px;font-size:13px;opacity:.95}
+.user .email{padding:6px 10px;background:rgba(255,255,255,.12);border-radius:8px}
+main{max-width:1200px;margin:26px auto;padding:0 20px 40px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+.login-wrap{min-height:calc(100dvh - 80px);display:grid;place-items:center;padding:20px}
+.login{width:100%;max-width:420px;padding:26px}
+h1{margin:0 0 4px;font-size:24px;color:var(--blue);letter-spacing:.2px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+label{display:block;font-size:12.5px;color:var(--muted);margin:0 0 6px;font-weight:600}
+input,select{width:100%;padding:12px 12px;border:1px solid var(--border);border-radius:11px;background:#fff;font-size:15px;transition:.18s}
+input:focus,select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(0,122,77,.15)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid transparent;font-weight:700;font-size:14px;cursor:pointer;transition:.18s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--green);color:#fff}
+.btn.primary:hover{background:#006341}
+.btn.ghost{background:#fff;border-color:var(--border);color:var(--text)}
+.btn.ghost:hover{background:#f7f9fc}
+.btn.danger{background:var(--red);color:#fff}
+.btn.small{padding:7px 10px;font-size:12.5px;border-radius:8px}
+.stack{display:grid;gap:12px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.stat{padding:16px 18px;border-radius:16px;background:#fff;border:1px solid var(--border)}
+.stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.stat .v{font-size:28px;font-weight:900;color:var(--blue);margin-top:6px}
+.stat .v em{color:var(--green);font-style:normal}
+.toolbar{padding:16px;display:grid;gap:12px}
+.toolbar-row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.field{flex:1;min-width:180px}
+.section-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#fbfdff,#f7f9fe)}
+.schools{display:grid;gap:12px;padding:14px}
+.school{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.18s}
+.school:hover{box-shadow:0 6px 18px rgba(0,35,149,.06)}
+.school-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px 14px 10px}
+.school-t h3{margin:0;font-size:17px;color:var(--blue)}
+.meta{font-size:13px;color:var(--muted);margin-top:3px}
+.school-a{display:flex;gap:8px;flex-wrap:wrap}
+.lic-wrap{padding:0 8px 12px;overflow-x:auto}
+table.lic{width:100%;border-collapse:separate;border-spacing:0 8px;min-width:720px}
+.lic th{font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);text-align:left;padding:0 10px;font-weight:700}
+.lic td{background:#f9fbff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:10px;font-size:13.5px}
+.lic tr td:first-child{border-left:1px solid var(--border);border-top-left-radius:10px;border-bottom-left-radius:10px}
+.lic tr td:last-child{border-right:1px solid var(--border);border-top-right-radius:10px;border-bottom-right-radius:10px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid transparent;text-transform:capitalize}
+.b.active{background:rgba(0,122,77,.1);color:var(--green);border-color:rgba(0,122,77,.22)}
+.b.cancelled{background:#eef2f7;color:#5a6577;border-color:#dfe4ec}
+.b.trial{background:rgba(255,184,28,.18);color:#8a5800;border-color:rgba(255,184,28,.35)}
+.b.basic{background:rgba(0,35,149,.08);color:var(--blue);border-color:rgba(0,35,149,.18)}
+.b.premium{background:linear-gradient(90deg,rgba(0,122,77,.10),rgba(0,35,149,.10));color:#0b1430;border-color:rgba(0,35,149,.2)}
+.muted{color:var(--muted)}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+.note{margin:16px;padding:12px 14px;border:1px dashed var(--gold);background:#fff9e6;color:#7a5a00;border-radius:12px;font-size:13px}
+.backdrop{position:fixed;inset:0;background:rgba(7,15,35,.55);backdrop-filter:blur(3px);display:none;place-items:center;padding:20px;z-index:50}
+.backdrop.show{display:grid}
+.modal{width:100%;max-width:520px;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.3);overflow:hidden;animation:pop .18s ease-out;border:1px solid var(--border)}
+@keyframes pop{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+.mh{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.mh h3{margin:0;font-size:18px;color:var(--blue)}
+.mb{padding:18px;display:grid;gap:12px}
+.mf{padding:14px 18px;background:#f9fafb;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;background:#f3f6fb;border:1px solid var(--border);border-radius:10px;font-size:12.5px;color:#334155}
+.dates{display:flex;gap:14px;flex-wrap:wrap}
+.toast{position:fixed;right:18px;bottom:18px;background:#0b1220;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px);transition:.22s;z-index:80;max-width:340px;font-size:14px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.err{background:#7a1313}
+.skeleton{height:42px;background:linear-gradient(90deg,#f2f4f8,#e9edf5,#f2f4f8);background-size:200% 100%;animation:sh 1.2s infinite;border-radius:10px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media (max-width:900px){.stats{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){
+  .head-inner{padding:12px 14px}
+  main{padding:0 14px 30px}
+  .stats{grid-template-columns:1fr}
+  .toolbar-row{flex-direction:column;align-items:stretch}
+  .school-h{flex-direction:column;align-items:flex-start}
+  .school-a{width:100%}.school-a .btn{flex:1}
+  .grid-2{grid-template-columns:1fr}
+  .lic{font-size:13px}
+  .btn{width:100%}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <div class="brand">
+      <div class="logo">L</div>
+      <div class="t">LearnSA <span>Admin</span></div>
+    </div>
+    <div class="user" id="userBox" style="display:none">
+      <span class="email" id="user-email"></span>
+      <button class="btn ghost small" id="logoutBtn" title="Sign out">Logout</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- LOGIN -->
+  <section id="login-view" class="login-wrap">
+    <div class="card login">
+      <h1>Admin Sign in</h1>
+      <div class="sub">Only users with <strong>role='admin'</strong> can access licence tools.</div>
+      <form id="login-form" class="stack">
+        <div>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="admin@learnsa.co.za" autocomplete="username" required />
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+        <button class="btn primary" type="submit">Sign in</button>
+        <div class="muted" style="font-size:12.5px">Protected by Supabase Auth. Ensure RLS is enabled.</div>
+      </form>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard-view" hidden>
+    <div class="stats">
+      <div class="stat"><div class="k">Total Schools</div><div class="v" id="stat-schools"><em>0</em></div></div>
+      <div class="stat"><div class="k">Active Licences</div><div class="v" id="stat-active"><em>0</em></div></div>
+      <div class="stat"><div class="k">Learners (Active)</div><div class="v" id="stat-learners"><em>0</em></div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-head"><strong style="color:var(--blue)">Add new school</strong></div>
+      <form id="add-school-form" class="toolbar">
+        <div class="toolbar-row">
+          <div class="field">
+            <label>School name</label>
+            <input name="name" placeholder="e.g. Thuto Secondary" required />
+          </div>
+          <div class="field">
+            <label>Contact email</label>
+            <input name="contact_email" type="email" placeholder="principal@school.co.za" required />
+          </div>
+          <div class="field">
+            <label>Province</label>
+            <select name="province" required>
+              <option value="">Select province</option>
+              <option>Eastern Cape</option><option>Free State</option><option>Gauteng</option>
+              <option>KwaZulu-Natal</option><option>Limpopo</option><option>Mpumalanga</option>
+              <option>Northern Cape</option><option>North West</option><option>Western Cape</option>
+            </select>
+          </div>
+          <div style="align-self:end"><button class="btn primary" type="submit">Add School</button></div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <strong style="color:var(--blue)">Schools & Licences</strong>
+        <span class="pill">Data source: Supabase • schools & licences</span>
+      </div>
+      <div id="schools" class="schools">
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+      <div class="note">Admin only – protect with Supabase RLS. See code comments for required policies.</div>
+    </div>
+  </section>
+</main>
+
+<!-- ACTIVATE MODAL -->
+<div class="backdrop" id="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="mh">
+      <h3 id="mTitle">Activate Licence</h3>
+      <button class="btn ghost small" id="mClose">Close</button>
+    </div>
+    <div class="mb">
+      <div class="muted" id="mSchool" style="margin-top:-4px"></div>
+      <input type="hidden" id="mSchoolId" />
+      <div class="grid-2">
+        <div>
+          <label>Plan</label>
+          <select id="mPlan">
+            <option value="trial">Trial</option>
+            <option value="basic" selected>Basic</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div>
+          <label>Max learners</label>
+          <input id="mLearners" type="number" min="1" step="1" value="150" />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <label>Duration (months)</label>
+          <input id="mMonths" type="number" min="1" max="36" value="12" />
+        </div>
+        <div>
+          <label>PayFast Payment ID</label>
+          <input id="mPayfast" placeholder="e.g. pf_123456 (optional)" />
+        </div>
+      <div class="dates">
+        <div class="pill">Start: <strong id="mStart"></strong></div>
+        <div class="pill">End: <strong id="mEnd"></strong></div>
+        <div class="pill">Status: <strong style="color:var(--green)">active</strong></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn ghost" id="mCancel">Cancel</button>
+      <button class="btn primary" id="mSave">Activate</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/*
+  =========================
+  SUPABASE SETUP - CONFIGURE
+  =========================
+  Replace with your project values from Supabase > Settings > API
+*/
+const SUPABASE_URL = 'https://eaehjijbtswftqjsxwuf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZWhqaWpidHN3ZnRxanN4d3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTMwMjAsImV4cCI6MjA5Nzg2OTAyMH0.Ql2lcJaXshPyBMCAb4pkIqOvwcyNDVgtLyrx-p6wClA';
+
+/*
+  =========================
+  REQUIRED TABLES (example)
+  =========================
+  profiles (id uuid PK references auth.users.id, role text default 'user')
+  schools (id uuid PK default gen_random_uuid(), name text, contact_email text, province text, created_at timestamptz default now())
+  licences (id uuid PK default gen_random_uuid(), school_id uuid references schools.id, plan text check (plan in ('trial','basic','premium')), status text default 'active', max_learners int, start_date date, end_date date, duration_months int, payfast_payment_id text, created_by uuid, created_at timestamptz default now(), cancelled_at timestamptz)
+
+  =========================
+  RLS POLICIES (run in SQL editor)
+  =========================
+  -- Enable RLS
+  alter table profiles enable row level security;
+  alter table schools enable row level security;
+  alter table licences enable row level security;
+
+  -- Profiles: user can read own; admins read all
+  create policy "profiles_self_read" on profiles for select using (auth.uid() = id);
+  create policy "profiles_admin_read" on profiles for select using (exists (select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'));
+
+  -- Schools: admin full access only
+  create policy "schools_admin_all" on schools for all
+    using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'))
+    with check (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+
+  -- Licences: admin full access only
+  create policy "licences_admin_all" on licences for all
+    using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'))
+    with check (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+*/
+
+const { createClient } = window.supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $ = (s, r=document)=>r.querySelector(s);
+const loginView = $('#login-view');
+const dashView = $('#dashboard-view');
+const userBox = $('#userBox');
+const userEmail = $('#user-email');
+let currentUser = null;
+
+function toast(msg, err=false){
+  const t = $('#toast'); t.textContent = msg; t.classList.toggle('err', err);
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3200);
+}
+function fmtDate(d){ if(!d) return '—'; const dt = new Date(d); return dt.toLocaleDateString('en-ZA',{year:'numeric',month:'short',day:'numeric'}); }
+function iso(d){ return new Date(d).toISOString().slice(0,10); }
+
+async function isAdmin(user){
+  // Check profiles.role = 'admin'
+  const { data, error } = await db.from('profiles').select('role').eq('id', user.id).maybeSingle();
+  if(error){ console.warn(error); return false; }
+  return data?.role === 'admin';
+}
+
+async function handlePostLogin(user){
+  const ok = await isAdmin(user);
+  if(!ok){ await db.auth.signOut(); toast('Access denied. Admins only.', true); return; }
+  currentUser = user;
+  loginView.hidden = true;
+  dashView.hidden = false;
+  userBox.style.display = 'flex';
+  userEmail.textContent = user.email || '';
+  await refresh();
+}
+
+async function init(){
+  const { data:{ session } } = await db.auth.getSession();
+  if(session?.user){ await handlePostLogin(session.user); }
+}
+init();
+
+$('#login-form').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = $('#email').value.trim();
+  const password = $('#password').value;
+  const btn = e.submitter; btn.disabled = true; btn.textContent = 'Signing in…';
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = 'Sign in';
+  if(error){ toast(error.message, true); return; }
+  await handlePostLogin(data.user);
+});
+
+$('#logoutBtn').addEventListener('click', async ()=>{
+  await db.auth.signOut(); location.reload();
+});
+
+$('#add-school-form').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const payload = Object.fromEntries(fd.entries());
+  const { error } = await db.from('schools').insert(payload);
+  if(error){ toast(error.message, true); return; }
+  e.target.reset(); toast('School added');
+  await refresh();
+});
+
+async function refresh(){
+  // Load schools with licences
+  const { data: schools, error } = await db
+    .from('schools')
+    .select('id, name, contact_email, province, created_at, licences:licences(id, plan, status, max_learners, start_date, end_date, payfast_payment_id, created_at)')
+    .order('name', { ascending:true });
+  if(error){ toast(error.message, true); return; }
+
+  // Stats
+  let activeCount = 0, learners = 0;
+  schools.forEach(s => (s.licences||[]).forEach(l => { if(l.status==='active'){ activeCount++; learners += (l.max_learners||0);} }));
+
+  $('#stat-schools').innerHTML = `<em>${schools.length}</em>`;
+  $('#stat-active').innerHTML = `<em>${activeCount}</em>`;
+  $('#stat-learners').innerHTML = `<em>${learners}</em>`;
+
+  // Render
+  const wrap = $('#schools'); wrap.innerHTML = '';
+  if(!schools.length){ wrap.innerHTML = `<div class="empty">No schools yet. Add your first school above.</div>`; return; }
+
+  schools.forEach(s=>{
+    const lic = (s.licences||[]).sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
+    const active = lic.find(l=>l.status==='active');
+    const card = document.createElement('div'); card.className='school';
+    card.innerHTML = `
+      <div class="school-h">
+        <div class="school-t">
+          <h3>${s.name}</h3>
+          <div class="meta">${s.contact_email||'—'} • ${s.province||'—'}</div>
+        </div>
+        <div class="school-a">
+          <button class="btn primary small" data-act="activate" data-id="${s.id}" data-name="${s.name}">Activate Licence</button>
+        </div>
+      </div>
+      <div class="lic-wrap">
+        <table class="lic">
+          <thead><tr>
+            <th>Plan</th><th>Status</th><th>Learners</th><th>Start</th><th>End</th><th>PayFast ID</th><th></th>
+          </tr></thead>
+          <tbody>
+            ${lic.length? lic.map(l=>`
+              <tr>
+                <td><span class="badge b ${l.plan}">${l.plan}</span></td>
+                <td><span class="badge b ${l.status}">${l.status}</span></td>
+                <td>${l.max_learners ?? '—'}</td>
+                <td>${fmtDate(l.start_date)}</td>
+                <td>${fmtDate(l.end_date)}</td>
+                <td class="muted">${l.payfast_payment_id || '—'}</td>
+                <td style="text-align:right">
+                  ${l.status==='active'
+                    ? `<button class="btn danger small" data-act="deactivate" data-id="${l.id}">Deactivate</button>`
+                    : `<span class="muted">—</span>`}
+                </td>
+              </tr>`).join('') : `<tr><td colspan="7" class="muted" style="padding:14px;background:#fff;border:1px solid var(--border);border-radius:10px;text-align:center">No licences yet</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    `;
+    wrap.appendChild(card);
+  });
+
+  // Wire buttons
+  wrap.querySelectorAll('[data-act="activate"]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openModal(btn.dataset.id, btn.dataset.name));
+  });
+  wrap.querySelectorAll('[data-act="deactivate"]').forEach(btn=>{
+    btn.addEventListener('click', ()=> deactivateLicence(btn.dataset.id));
+  });
+}
+
+async function deactivateLicence(id){
+  if(!confirm('Deactivate this licence? Learners will lose access at end of day.')) return;
+  const { error } = await db.from('licences').update({ status:'cancelled', cancelled_at: new Date().toISOString() }).eq('id', id);
+  if(error){ toast(error.message, true); return; }
+  toast('Licence cancelled'); await refresh();
+}
+
+// Modal logic
+const modal = $('#modal');
+const mSchoolId = $('#mSchoolId'), mSchool = $('#mSchool');
+const mPlan = $('#mPlan'), mLearners = $('#mLearners'), mMonths = $('#mMonths'), mPayfast = $('#mPayfast');
+const mStart = $('#mStart'), mEnd = $('#mEnd');
+
+function openModal(schoolId, schoolName){
+  mSchoolId.value = schoolId;
+  mSchool.textContent = schoolName;
+  mPlan.value = 'basic'; mLearners.value = 150; mMonths.value = 12; mPayfast.value = '';
+  updateDates();
+  modal.classList.add('show');
+}
+function closeModal(){ modal.classList.remove('show'); }
+$('#mClose').onclick = closeModal; $('#mCancel').onclick = closeModal;
+modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+
+function updateDates(){
+  const start = new Date(); const months = parseInt(mMonths.value||'12',10);
+  const end = new Date(start); end.setMonth(end.getMonth()+months);
+  mStart.textContent = fmtDate(start); mEnd.textContent = fmtDate(end);
+  mStart.dataset.iso = iso(start); mEnd.dataset.iso = iso(end);
+}
+mMonths.addEventListener('input', updateDates);
+
+$('#mSave').addEventListener('click', async ()=>{
+  const school_id = mSchoolId.value;
+  const plan = mPlan.value;
+  const max_learners = parseInt(mLearners.value,10) || 1;
+  const duration_months = parseInt(mMonths.value,10) || 12;
+  const payfast_payment_id = mPayfast.value.trim() || null;
+  const start_date = mStart.dataset.iso;
+  const end_date = mEnd.dataset.iso;
+
+  const payload = { school_id, plan, max_learners, start_date, end_date, duration_months, payfast_payment_id, status:'active', created_by: currentUser?.id || null };
+  const btn = $('#mSave'); btn.disabled = true; btn.textContent = 'Activating…';
+  const { error } = await db.from('licences').insert(payload);
+  btn.disabled = false; btn.textContent = 'Activate';
+  if(error){ toast(error.message, true); return; }
+  closeModal(); toast('Licence activated'); await refresh();
+});
+
+// Live session changes
+db.auth.onAuthStateChange((_event, session)=>{
+  if(!session){ loginView.hidden=false; dashView.hidden=true; userBox.style.display='none'; }
+});
+</script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+</body>
+</html>
