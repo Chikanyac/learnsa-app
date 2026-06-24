@@ -657,6 +657,10 @@ function renderWeeks(){
       const done = !!progress[id];
       const act = document.createElement('div');
       act.className = 'activity' + (done?' done':'');
+      act.dataset.area = area.key;
+      act.dataset.week = w;
+      act.dataset.grade = currentGrade;
+      act.dataset.id = id;
       act.innerHTML = `
         <input type="checkbox" id="${id}" ${done?'checked':''} aria-label="Mark complete">
         <div>
@@ -801,47 +805,200 @@ setTimeout(()=>{
 }, 0);
 </script>
 
-<!-- Activity Player Modal -->
-<div id="activityModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
-  <div style="background:#fff;max-width:560px;width:92%;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.35);font-family:Inter,system-ui">
-    <h3 id="modalTitle" style="margin:0 0 8px;color:#002395;font-size:20px"></h3>
-    <div id="modalBody" style="color:#334155;line-height:1.65;font-size:15px;max-height:50vh;overflow:auto"></div>
-    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
-      <button onclick="closeActivity()" style="padding:10px 16px;border:1px solid #e5e9f2;border-radius:10px;background:#f7f9fc;font-weight:600;cursor:pointer">Close</button>
-      <button onclick="completeActivity()" style="padding:10px 16px;border:0;border-radius:10px;background:#007A4D;color:#fff;font-weight:700;cursor:pointer">Mark Done ✓</button>
+<!-- Interactive Activity Player -->
+<div id="activityModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;max-width:640px;width:100%;border-radius:20px;padding:24px;box-shadow:0 25px 70px rgba(0,0,0,.4);max-height:90vh;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
+      <h3 id="modalTitle" style="margin:0;color:#002395;font-size:22px;line-height:1.2"></h3>
+      <button onclick="closeActivity()" style="background:none;border:0;font-size:28px;line-height:1;color:#64748b;cursor:pointer;padding:0 4px">×</button>
+    </div>
+    <p id="modalDesc" style="color:#475569;margin:8px 0 18px;font-size:14px"></p>
+    <div id="modalGame" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:18px;min-height:180px"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+      <button onclick="closeActivity()" style="padding:10px 16px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;font-weight:600;cursor:pointer">Close</button>
+      <button id="modalDoneBtn" onclick="completeActivity()" style="padding:10px 18px;border:0;border-radius:10px;background:#007A4D;color:#fff;font-weight:700;cursor:pointer;opacity:.5" disabled>Mark Done ✓</button>
     </div>
   </div>
 </div>
 
 <script>
 let currentActivityEl = null;
-function openActivity(el, title, html) {
+let gameSolved = false;
+
+function openActivity(el) {
   currentActivityEl = el;
+  gameSolved = false;
+  const area = el.dataset.area;
+  const grade = el.dataset.grade;
+  const week = el.dataset.week;
+  const title = el.querySelector('h4').innerText;
+  const desc = el.querySelector('p').innerHTML;
+  
   document.getElementById('modalTitle').innerText = title;
-  document.getElementById('modalBody').innerHTML = html.replace(/•/g,'<br>• ');
+  document.getElementById('modalDesc').innerHTML = desc.replace(/<br>/g,' • ');
+  document.getElementById('modalDoneBtn').disabled = true;
+  document.getElementById('modalDoneBtn').style.opacity = '.5';
+  
+  const gameDiv = document.getElementById('modalGame');
+  gameDiv.innerHTML = '';
+  
+  // Generate game based on area
+  if(area==='numbers') renderNumbersGame(gameDiv, grade, week);
+  else if(area==='patterns') renderPatternsGame(gameDiv, grade, week);
+  else if(area==='shape') renderShapeGame(gameDiv, grade, week);
+  else if(area==='measurement') renderMeasurementGame(gameDiv, grade, week);
+  else if(area==='data') renderDataGame(gameDiv, grade, week);
+  
   document.getElementById('activityModal').style.display = 'flex';
 }
+
 function closeActivity(){ document.getElementById('activityModal').style.display='none'; }
+
 function completeActivity(){
+  if(!gameSolved) return;
   if(currentActivityEl){
     const cb = currentActivityEl.querySelector('input[type=checkbox]');
     if(cb && !cb.checked){ cb.checked = true; cb.dispatchEvent(new Event('change', {bubbles:true})); }
   }
   closeActivity();
 }
-// Make activities clickable (ignore checkbox clicks)
+
+function markSolved(){
+  gameSolved = true;
+  const btn = document.getElementById('modalDoneBtn');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  btn.innerText = 'Mark Done ✓';
+}
+
+// --- GAME TEMPLATES ---
+function renderNumbersGame(container, grade, week){
+  const max = grade==='R' ? 5+Number(week) : grade==='1' ? 7+Number(week) : grade==='2' ? 10+Number(week)*2 : 20+Number(week)*3;
+  const target = Math.min(Math.max(3, Math.floor(Math.random()*5)+Number(week)), max);
+  container.innerHTML = `<p style="margin:0 0 12px;font-weight:600">Tap to count: How many apples?</p><div id="countArea" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px"></div><div style="display:flex;gap:8px;align-items:center"><input id="countInput" type="number" min="0" max="50" placeholder="?" style="width:80px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px"><button id="checkCount" style="padding:8px 14px;background:#002395;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer">Check</button><span id="countFeedback" style="font-weight:600"></span></div>`;
+  const area = container.querySelector('#countArea');
+  for(let i=0;i<target;i++){
+    const apple = document.createElement('div');
+    apple.innerHTML = '🍎';
+    apple.style.fontSize = '32px';
+    apple.style.cursor = 'pointer';
+    apple.style.transition = '.15s';
+    apple.onclick = ()=>{ apple.style.transform = apple.style.transform ? '' : 'scale(1.3)'; };
+    area.appendChild(apple);
+  }
+  container.querySelector('#checkCount').onclick = ()=>{
+    const val = Number(container.querySelector('#countInput').value);
+    const fb = container.querySelector('#countFeedback');
+    if(val===target){ fb.textContent='✓ Correct!'; fb.style.color='#007A4D'; markSolved(); }
+    else { fb.textContent='Try again'; fb.style.color='#d92d20'; }
+  };
+}
+
+function renderPatternsGame(container, grade, week){
+  const patterns = [['🔴','🔵'],['🟡','🟢','🟡'],['⭐','⭐','⚪'],['🟦','🟨']];
+  const pat = patterns[week%patterns.length];
+  const seq = [...pat, ...pat, pat[0]];
+  container.innerHTML = `<p style="margin:0 0 12px;font-weight:600">Complete the pattern:</p><div id="patSeq" style="display:flex;gap:8px;font-size:32px;margin-bottom:14px"></div><p style="margin:8px 0 6px">Choose next:</p><div id="patChoices" style="display:flex;gap:10px"></div><div id="patFeedback" style="margin-top:10px;font-weight:600"></div>`;
+  const seqDiv = container.querySelector('#patSeq');
+  seq.slice(0,-1).forEach(s=>{ const d=document.createElement('div'); d.textContent=s; seqDiv.appendChild(d); });
+  const missing = document.createElement('div'); missing.textContent='?'; missing.style.opacity='.4'; seqDiv.appendChild(missing);
+  const choices = [...new Set(pat)];
+  const choicesDiv = container.querySelector('#patChoices');
+  choices.forEach(c=>{
+    const b=document.createElement('button');
+    b.textContent=c; b.style.fontSize='28px'; b.style.padding='6px 12px'; b.style.border='1px solid #cbd5e1'; b.style.borderRadius='8px'; b.style.background='#fff'; b.style.cursor='pointer';
+    b.onclick=()=>{
+      const fb = container.querySelector('#patFeedback');
+      if(c===seq[seq.length-1]){ fb.textContent='✓ Pattern complete!'; fb.style.color='#007A4D'; missing.textContent=c; missing.style.opacity='1'; markSolved(); }
+      else { fb.textContent='Not quite'; fb.style.color='#d92d20'; }
+    };
+    choicesDiv.appendChild(b);
+  });
+}
+
+function renderShapeGame(container, grade, week){
+  const shapes = [{e:'⚪',n:'circle',r:true},{e:'⬜',n:'square',r:false},{e:'🔺',n:'triangle',r:false},{e:'🟦',n:'rectangle',r:false}];
+  const target = shapes[week%shapes.length];
+  container.innerHTML = `<p style="margin:0 0 12px;font-weight:600">Tap all the ${target.n}s that roll:</p><div id="shapeArea" style="display:flex;flex-wrap:wrap;gap:12px;font-size:40px"></div><div id="shapeFeedback" style="margin-top:12px;font-weight:600"></div>`;
+  const area = container.querySelector('#shapeArea');
+  let found=0, needed=0;
+  for(let i=0;i<6;i++){
+    const s = shapes[Math.floor(Math.random()*shapes.length)];
+    if(s.r) needed++;
+    const d=document.createElement('div');
+    d.textContent=s.e; d.style.cursor='pointer'; d.style.padding='6px'; d.style.borderRadius='8px'; d.dataset.roll=s.r;
+    d.onclick=()=>{
+      if(d.dataset.done) return;
+      d.dataset.done=1;
+      if(s.r){ d.style.background='#dcfce7'; found++; } else { d.style.background='#fee2e2'; }
+      const fb = container.querySelector('#shapeFeedback');
+      if(found===needed && needed>0){ fb.textContent='✓ Well done!'; fb.style.color='#007A4D'; markSolved(); }
+      else { fb.textContent=`Found ${found}/${needed}`; fb.style.color='#334155'; }
+    };
+    area.appendChild(d);
+  }
+  if(needed===0){ container.querySelector('#shapeFeedback').textContent='Tap the circles!'; }
+}
+
+function renderMeasurementGame(container, grade, week){
+  container.innerHTML = `<p style="margin:0 0 12px;font-weight:600">Drag to order from shortest to tallest:</p><div id="measureArea" style="display:flex;align-items:flex-end;gap:12px;height:140px;margin-bottom:12px"></div><button id="checkOrder" style="padding:8px 14px;background:#002395;color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer">Check Order</button> <span id="measureFeedback" style="font-weight:600;margin-left:8px"></span>`;
+  const area = container.querySelector('#measureArea');
+  const heights = [60,90,120,75,100].sort(()=>Math.random()-.5).slice(0,3+ (week%3));
+  heights.forEach(h=>{
+    const bar=document.createElement('div');
+    bar.style.width='50px'; bar.style.height=h+'px'; bar.style.background='#007A4D'; bar.style.borderRadius='6px 6px 0 0'; bar.style.cursor='grab'; bar.draggable=true; bar.dataset.h=h;
+    bar.innerHTML=`<div style="color:#fff;text-align:center;padding-top:4px;font-size:12px">${h}</div>`;
+    area.appendChild(bar);
+  });
+  let dragEl=null;
+  area.addEventListener('dragstart',e=>dragEl=e.target);
+  area.addEventListener('dragover',e=>{e.preventDefault(); const after = [...area.children].find(c=>e.clientX < c.getBoundingClientRect().left + c.offsetWidth/2); if(after) area.insertBefore(dragEl, after); else area.appendChild(dragEl); });
+  container.querySelector('#checkOrder').onclick=()=>{
+    const order = [...area.children].map(c=>Number(c.dataset.h));
+    const sorted = [...order].sort((a,b)=>a-b);
+    const fb = container.querySelector('#measureFeedback');
+    if(JSON.stringify(order)===JSON.stringify(sorted)){ fb.textContent='✓ Correct order!'; fb.style.color='#007A4D'; markSolved(); }
+    else { fb.textContent='Try again'; fb.style.color='#d92d20'; }
+  };
+}
+
+function renderDataGame(container, grade, week){
+  const options = ['Apples','Bananas','Oranges','Grapes'];
+  const counts = [0,0,0,0];
+  container.innerHTML = `<p style="margin:0 0 12px;font-weight:600">Class favourite fruit – tap to vote (make 10 votes):</p><div id="voteBtns" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div><div id="barChart" style="display:flex;align-items:flex-end;gap:14px;height:120px;border-left:2px solid #334155;border-bottom:2px solid #334155;padding:6px"></div><div style="margin-top:8px">Total votes: <span id="voteTotal">0</span>/10 <span id="dataFeedback" style="font-weight:600;margin-left:8px"></span></div>`;
+  const btns = container.querySelector('#voteBtns');
+  options.forEach((opt,i)=>{
+    const b=document.createElement('button');
+    b.textContent=opt; b.style.padding='6px 10px'; b.style.border='1px solid #cbd5e1'; b.style.borderRadius='8px'; b.style.background='#fff'; b.style.cursor='pointer';
+    b.onclick=()=>{
+      if(counts.reduce((a,b)=>a+b,0)>=10) return;
+      counts[i]++; updateChart();
+    };
+    btns.appendChild(b);
+  });
+  function updateChart(){
+    const chart = container.querySelector('#barChart');
+    chart.innerHTML='';
+    counts.forEach((c,i)=>{
+      const bar=document.createElement('div');
+      bar.style.width='40px'; bar.style.height=(c*10)+'px'; bar.style.background=['#002395','#007A4D','#FFB81C','#d92d20'][i]; bar.title=options[i]+': '+c;
+      chart.appendChild(bar);
+    });
+    const total = counts.reduce((a,b)=>a+b,0);
+    container.querySelector('#voteTotal').textContent=total;
+    if(total>=10){ container.querySelector('#dataFeedback').textContent='✓ Graph complete!'; container.querySelector('#dataFeedback').style.color='#007A4D'; markSolved(); }
+  }
+  updateChart();
+}
+
+// Make activities clickable
 document.addEventListener('click', e => {
-  const act = e.target.closest('.activity, .activity-card, .act');
+  const act = e.target.closest('.activity');
   if(act && !e.target.matches('input[type=checkbox]')){
-    const titleEl = act.querySelector('h4, .act-title, strong');
-    const bodyEl = act.querySelector('p, .act-body, .content');
-    const title = titleEl ? titleEl.innerText : 'Activity';
-    const body = bodyEl ? bodyEl.innerHTML : act.innerHTML;
-    openActivity(act, title, body);
+    openActivity(act);
   }
 });
 </script>
-
 <script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
 </body>
 </html>
