@@ -663,6 +663,7 @@ function renderWeeks(){
         act.dataset.week = w;
         act.dataset.grade = currentGrade;
         act.dataset.id = id;
+        act.dataset.part = idx+1;
         act.innerHTML = `
           <input type="checkbox" id="${id}" ${done?'checked':''} aria-label="Mark complete">
           <div>
@@ -752,6 +753,9 @@ async function signIn(){
     user = { email: data.user.email, id: data.user.id };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     closeLogin(); refreshAuthUI();
+    await loadProfile();
+    setGrade(currentGrade);
+    updateDashboard();
   } else {
     user = { email };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -777,6 +781,27 @@ function refreshAuthUI(){
   }
 }
 
+// Load profile and lock grade for learners
+async function loadProfile(){
+  if(!user || !window.supabase) return;
+  try{
+    const { data } = await supabase.from('profiles').select('role,grade,full_name').eq('id', user.id).single();
+    if(data){
+      // Store for later
+      window.userProfile = data;
+      if(data.role === 'learner' && data.grade){
+        currentGrade = data.grade;
+        // hide grade selector
+        const pills = document.querySelector('.grade-pills');
+        if(pills) pills.style.display = 'none';
+        document.getElementById('gradeTitle').textContent = `Grade ${data.grade === 'R' ? 'R' : data.grade}`;
+        // personalize welcome
+        if(data.full_name) welcome.textContent = `Welcome, ${data.full_name}`;
+      }
+    }
+  }catch(e){ console.warn('profile load failed', e); }
+}
+
 loginBtn.addEventListener('click', async ()=>{
   if(user && user.email){ await signOut(); } else { openLogin(); }
 });
@@ -784,11 +809,14 @@ loginModal.addEventListener('click', (e)=>{ if(e.target===loginModal) closeLogin
 
 // Restore session
 if(supabaseClient){
-  supabaseClient.auth.getSession().then(({data})=>{
+  supabaseClient.auth.getSession().then(async ({data})=>{
     if(data.session?.user){
       user = { email: data.session.user.email, id: data.session.user.id };
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       refreshAuthUI();
+      await loadProfile();
+      setGrade(currentGrade);
+      updateDashboard();
     }
   });
 }
@@ -806,64 +834,6 @@ setTimeout(()=>{
   const first = document.querySelector('.week');
   if(first){ first.classList.add('open'); first.querySelector('.week-header').setAttribute('aria-expanded','true'); }
 }, 0);
-</script>
-
-<!-- Simple Tap-Based Activity Player -->
-<div id="activityModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:16px">
-  <div style="background:#fff;max-width:520px;width:100%;border-radius:16px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-    <div style="display:flex;justify-content:space-between;align-items:start">
-      <h3 id="modalTitle" style="margin:0;color:#002395;font-size:20px"></h3>
-      <button onclick="closeActivity()" style="background:none;border:0;font-size:26px;color:#64748b;cursor:pointer">×</button>
-    </div>
-    <p id="modalInstr" style="margin:6px 0 12px;color:#475569;font-size:14px;font-style:italic"></p>
-    <div id="modalGame" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;min-height:140px"></div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
-      <button onclick="closeActivity()" style="padding:8px 14px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;font-weight:600">Close</button>
-      <button id="doneBtn" onclick="finishActivity()" disabled style="padding:8px 14px;border:0;border-radius:8px;background:#007A4D;color:#fff;font-weight:700;opacity:.5">Done ✓</button>
-    </div>
-  </div>
-</div>
-
-<script>
-let currentAct=null, startTime=0, tries=0;
-function openActivity(el){
-  currentAct=el; tries=0; startTime=Date.now();
-  const area=el.dataset.area, title=el.querySelector('h4').innerText, desc=el.querySelector('p').innerText;
-  document.getElementById('modalTitle').textContent=title;
-  document.getElementById('doneBtn').disabled=true;
-  document.getElementById('doneBtn').style.opacity='.5';
-  const instr={numbers:'Tap the correct answer',patterns:'Choose what comes next',shape:'Tap all circles',measurement:'Tap in order from smallest',data:'Tap to build the chart'};
-  document.getElementById('modalInstr').textContent=instr[area]||'Tap to play';
-  const game=document.getElementById('modalGame'); game.innerHTML='';
-  
-  // Simple tap games
-  if(area==='numbers'){
-    const n = 3 + Math.floor(Math.random()*5);
-    game.innerHTML=`<p style="font-weight:600">How many apples?</p><div style="font-size:32px">${'🍎'.repeat(n)}</div><div style="margin-top:10px;display:flex;gap:8px" id="opts"></div><div id="fb" style="margin-top:8px;font-weight:600"></div>`;
-    [n-1,n,n+1].filter(x=>x>0).sort(()=>Math.random()-.5).forEach(v=>{ const b=document.createElement('button'); b.textContent=v; b.style.padding='10px 16px'; b.style.fontSize='18px'; b.onclick=()=>{tries++; const fb=game.querySelector('#fb'); if(v===n){fb.textContent='✓ Correct';fb.style.color='#007A4D';document.getElementById('doneBtn').disabled=false;document.getElementById('doneBtn').style.opacity='1';}else{fb.textContent='Try again';fb.style.color='#d92d20';}}; game.querySelector('#opts').appendChild(b); });
-  } else if(area==='patterns'){
-    const pat=['🔴','🔵','🔴','🔵','?']; game.innerHTML=`<p style="font-weight:600">Complete: ${pat.slice(0,4).join(' ')}</p><div style="display:flex;gap:10px;margin-top:10px" id="opts"></div><div id="fb" style="margin-top:8px;font-weight:600"></div>`;
-    ['🔴','🔵','🟡'].forEach(c=>{ const b=document.createElement('button'); b.textContent=c; b.style.fontSize='28px'; b.onclick=()=>{tries++; const fb=game.querySelector('#fb'); if(c==='🔴'){fb.textContent='✓';fb.style.color='#007A4D';document.getElementById('doneBtn').disabled=false;document.getElementById('doneBtn').style.opacity='1';}else{fb.textContent='No';fb.style.color='#d92d20';}}; game.querySelector('#opts').appendChild(b); });
-  } else if(area==='shape'){
-    game.innerHTML=`<p style="font-weight:600">Tap all circles</p><div style="font-size:36px;display:flex;gap:12px;flex-wrap:wrap" id="sh"></div><div id="fb" style="margin-top:8px"></div>`;
-    let need=0,found=0; ['⚪','⬜','🔺','⚪','🟦'].forEach(s=>{ if(s==='⚪')need++; const d=document.createElement('span'); d.textContent=s; d.style.cursor='pointer'; d.onclick=()=>{ if(d.dataset.d) return; d.dataset.d=1; tries++; if(s==='⚪'){found++; d.style.opacity='.4';} const fb=game.querySelector('#fb'); fb.textContent=`${found}/${need}`; if(found===need){fb.textContent='✓ Done';fb.style.color='#007A4D';document.getElementById('doneBtn').disabled=false;document.getElementById('doneBtn').style.opacity='1';}}; game.querySelector('#sh').appendChild(d); });
-  } else if(area==='measurement'){
-    game.innerHTML=`<p style="font-weight:600">Tap from shortest to tallest</p><div style="display:flex;gap:10px;align-items:flex-end;height:100px" id="bars"></div><div id="fb" style="margin-top:8px"></div>`;
-    const hs=[60,90,120].sort(()=>Math.random()-.5); let order=[]; hs.forEach(h=>{ const b=document.createElement('div'); b.style.width='40px'; b.style.height=h+'px'; b.style.background='#007A4D'; b.style.cursor='pointer'; b.dataset.h=h; b.onclick=()=>{ order.push(+h); b.style.opacity='.5'; b.style.pointerEvents='none'; tries++; if(order.length===3){ const fb=game.querySelector('#fb'); const sorted=[...order].sort((a,b)=>a-b); if(JSON.stringify(order)===JSON.stringify(sorted)){fb.textContent='✓';fb.style.color='#007A4D';document.getElementById('doneBtn').disabled=false;document.getElementById('doneBtn').style.opacity='1';}else{fb.textContent='Wrong order - refresh';fb.style.color='#d92d20';}}}; game.querySelector('#bars').appendChild(b); });
-  } else {
-    game.innerHTML=`<p style="font-weight:600">Tap 5 times to finish</p><button id="tap" style="padding:12px 20px;font-size:18px">Tap</button> <span id="c">0</span>/5`; let cnt=0; game.querySelector('#tap').onclick=()=>{ cnt++; tries++; game.querySelector('#c').textContent=cnt; if(cnt>=5){document.getElementById('doneBtn').disabled=false;document.getElementById('doneBtn').style.opacity='1';} };
-  }
-  document.getElementById('activityModal').style.display='flex';
-}
-function closeActivity(){ document.getElementById('activityModal').style.display='none'; }
-async function finishActivity(){
-  if(!currentAct) return;
-  const cb=currentAct.querySelector('input'); if(cb && !cb.checked){ cb.checked=true; cb.dispatchEvent(new Event('change',{bubbles:true})); }
-  // save to supabase
-  try{ if(window.supabase && user){ await supabase.from('activity_attempts').insert({profile_id:user.id, grade:currentAct.dataset.grade, week:+currentAct.dataset.week, area:currentAct.dataset.area, activity_id:currentAct.dataset.id, score:Math.max(100-(tries-1)*20,20), attempts:tries, time_spent_seconds:Math.round((Date.now()-startTime)/1000)}); } }catch(e){}
-  closeActivity();
-}
-document.addEventListener('click', e=>{ const a=e.target.closest('.activity'); if(a && !e.target.matches('input')){ e.preventDefault(); openActivity(a); } });
 </script>
 <script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
 </body>
