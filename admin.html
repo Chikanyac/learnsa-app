@@ -151,6 +151,15 @@ table.lic{width:100%;border-collapse:separate;border-spacing:0 8px;min-width:720
       <div class="stat"><div class="k">Learners (Active)</div><div class="v" id="stat-learners"><em>0</em></div></div>
     </div>
 
+    <!-- NEW: Learning Analytics -->
+    <div class="stats" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px">
+      <div class="stat"><div class="k">Numbers Avg</div><div class="v" id="stat-numbers"><em>—</em>%</div></div>
+      <div class="stat"><div class="k">Patterns Avg</div><div class="v" id="stat-patterns"><em>—</em>%</div></div>
+      <div class="stat"><div class="k">Shape Avg</div><div class="v" id="stat-shape"><em>—</em>%</div></div>
+      <div class="stat"><div class="k">Measurement Avg</div><div class="v" id="stat-measurement"><em>—</em>%</div></div>
+      <div class="stat"><div class="k">Data Avg</div><div class="v" id="stat-data"><em>—</em>%</div></div>
+    </div>
+
     <div class="card" style="margin-bottom:16px">
       <div class="section-head"><strong style="color:var(--blue)">Add new school</strong></div>
       <form id="add-school-form" class="toolbar">
@@ -463,6 +472,26 @@ $('#mSave').addEventListener('click', async ()=>{
   if(error){ toast(error.message, true); return; }
   closeModal(); toast('Licence activated'); await refresh();
 });
+
+// Load learning analytics
+async function loadAnalytics(){
+  try{
+    const { data, error } = await db.from('activity_attempts').select('area,score');
+    if(error) return;
+    const sums = {numbers:0,patterns:0,shape:0,measurement:0,data:0};
+    const counts = {numbers:0,patterns:0,shape:0,measurement:0,data:0};
+    data.forEach(r=>{ if(sums[r.area]!==undefined){ sums[r.area]+=r.score; counts[r.area]++; } });
+    ['numbers','patterns','shape','measurement','data'].forEach(a=>{
+      const avg = counts[a] ? Math.round(sums[a]/counts[a]) : 0;
+      const el = document.getElementById('stat-'+a);
+      if(el) el.innerHTML = `<em>${avg}</em>%`;
+    });
+  }catch(e){ console.warn(e); }
+}
+
+// Call analytics after login
+const _origRefresh = refresh;
+refresh = async function(){ await _origRefresh(); await loadAnalytics(); };
 
 // Live session changes
 db.auth.onAuthStateChange((_event, session)=>{
