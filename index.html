@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnSA – CAPS Foundation Phase Maths</title>
+<style>
+:root{
+  --sa-blue:#002395;
+  --sa-blue-2:#001a70;
+  --sa-green:#007A4D;
+  --sa-yellow:#FFB81C;
+  --sa-red:#DE3831;
+  --ink:#102033;
+  --muted:#5b6b7f;
+  --bg:#f6f8fb;
+  --card:#ffffff;
+  --ring:#e6ecf5;
+  --shadow:0 6px 20px rgba(0,35,149,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,Arial,sans-serif;line-height:1.45}
+.container{max-width:1100px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:50;background:linear-gradient(90deg,var(--sa-blue),var(--sa-green));color:#fff;box-shadow:var(--shadow)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.brand{display:flex;align-items:center;gap:10px}
+.sa-badge{display:flex;gap:4px;background:#fff1;padding:6px 8px;border-radius:999px}
+.brand strong{display:block;font-size:20px;letter-spacing:.3px}
+.brand small{display:block;opacity:.9;margin-top:-2px;font-size:12px}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
+.btn-light{background:#fff;color:var(--sa-blue)}
+.btn-primary{background:var(--sa-green);color:#fff}
+.btn-yellow{background:var(--sa-yellow);color:#111}
+.btn-ghost{background:transparent;color:var(--sa-blue);border:1px solid var(--ring)}
+.grade-tabs{display:flex;gap:8px;padding:14px 0 6px;overflow-x:auto;scrollbar-width:none}
+.grade-tabs::-webkit-scrollbar{display:none}
+.tab-btn{flex:0 0 auto;padding:10px 16px;border-radius:999px;background:#fff;border:1px solid var(--ring);font-weight:700;color:var(--sa-blue);cursor:pointer}
+.tab-btn.active{background:var(--sa-yellow);border-color:var(--sa-yellow);color:#111}
+main{padding:20px 0 60px}
+.card{background:var(--card);border:1px solid var(--ring);border-radius:16px;box-shadow:var(--shadow)}
+.section{padding:18px}
+.section h2{margin:0 0 10px;font-size:20px}
+.grid-2{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+@media (max-width:900px){.grid-2{grid-template-columns:1fr}}
+.dashboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:900px){.dashboard-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.dashboard-grid{grid-template-columns:1fr}}
+.dash-card{padding:14px;border-radius:12px;background:#fff;border:1px solid var(--ring)}
+.dash-card h3{margin:0 0 6px;font-size:15px}
+.mini-progress{height:8px;background:#eef3fb;border-radius:99px;overflow:hidden}
+.mini-progress > span{display:block;height:100%;background:linear-gradient(90deg,var(--sa-green),var(--sa-blue));width:0%}
+.progress-wrap{display:flex;align-items:center;gap:12px;margin:8px 0 14px}
+.progress-bar{flex:1;height:12px;background:#e9eef7;border-radius:99px;overflow:hidden;border:1px solid var(--ring)}
+.progress-bar > div{height:100%;width:0%;background:linear-gradient(90deg,var(--sa-green),var(--sa-blue));transition:width .4s ease}
+.progress-text{font-weight:700;color:var(--sa-blue);min-width:48px;text-align:right}
+.weeks{display:grid;gap:12px}
+.week{border:1px solid var(--ring);border-radius:14px;background:#fff;overflow:hidden}
+.week-header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;cursor:pointer;border:0;font-weight:700;color:var(--ink)}
+.week-header span{color:var(--muted);font-weight:600;font-size:13px}
+.week-content{max-height:0;overflow:hidden;transition:max-height .35s ease;background:#fcfdff;border-top:1px solid var(--ring)}
+.week.open .week-content{max-height:2000px}
+.activities{padding:12px 12px 4px}
+.activity{display:flex;gap:12px;align-items:flex-start;padding:12px;border-left:4px solid var(--sa-blue);background:#f7fbff;border-radius:10px;margin:0 0 10px}
+.activity.done{border-left-color:var(--sa-green);background:#f0fdf6;opacity:.92}
+.activity input{margin-top:3px;transform:scale(1.2)}
+.activity h4{margin:0 0 4px;font-size:15px}
+.activity p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#eef5ff;color:var(--sa-blue);font-size:12px;font-weight:700;margin-left:8px}
+.pricing{margin-top:28px}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:900px){.pricing-grid{grid-template-columns:1fr}}
+.price-card{padding:18px;text-align:center}
+.price-card h3{margin:6px 0}
+.price{font-size:32px;font-weight:800;color:var(--sa-blue);margin:6px 0}
+.price small{font-size:14px;color:var(--muted);font-weight:600}
+.price-card ul{list-style:none;padding:0;margin:12px 0;text-align:left;color:var(--muted)}
+.price-card li{padding:6px 0;border-bottom:1px dashed #e6ecf5}
+.price-card li:last-child{border-bottom:0}
+.ribbon{display:inline-block;background:var(--sa-yellow);color:#111;font-weight:800;padding:4px 10px;border-radius:999px;font-size:12px}
+footer{margin-top:30px;padding:26px 0;background:#0b1a33;color:#c8d5ea}
+footer a{color:#fff}
+.notice{font-size:13px;color:#a9b8d3}
+.modal{position:fixed;inset:0;background:rgba(7,15,30,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:100}
+.modal.hidden{display:none}
+.modal-card{width:100%;max-width:380px;background:#fff;border-radius:16px;padding:18px;border:1px solid var(--ring);box-shadow:var(--shadow)}
+.modal-card h3{margin:0 0 8px}
+.field{display:grid;gap:6px;margin:10px 0}
+.field input{padding:10px 12px;border:1px solid var(--ring);border-radius:10px;font-size:15px}
+.helper{font-size:12px;color:var(--muted)}
+.kicker{color:var(--sa-green);font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.08em}
+.top-strip{background:linear-gradient(90deg,var(--sa-yellow),#ffd76a);color:#111;font-weight:700;text-align:center;padding:6px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="top-strip">LearnSA – Built for South African CAPS • Foundation Phase Maths</div>
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <div class="sa-badge" aria-hidden="true">
+        <span style="color:#002395">●</span>
+        <span style="color:#007A4D">●</span>
+        <span style="color:#FFB81C">●</span>
+        <span style="color:#DE3831">●</span>
+      </div>
+      <div>
+        <strong>LearnSA</strong>
+        <small>CAPS Foundation Phase</small>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="welcome" class="helper" style="color:#fff;opacity:.95;display:none"></span>
+      <button id="loginBtn" class="btn btn-light">Login</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="grade-tabs" role="tablist" aria-label="Select Grade">
+    <button class="tab-btn active" data-grade="R" role="tab" aria-selected="true">Grade R</button>
+    <button class="tab-btn" data-grade="1" role="tab">Grade 1</button>
+    <button class="tab-btn" data-grade="2" role="tab">Grade 2</button>
+    <button class="tab-btn" data-grade="3" role="tab">Grade 3</button>
+  </div>
+
+  <div class="grid-2">
+    <section class="card section" aria-labelledby="dashTitle">
+      <div class="kicker">Parent / Teacher</div>
+      <h2 id="dashTitle">Dashboard</h2>
+      <div class="dashboard-grid" id="dashGrid"></div>
+      <p class="helper" style="margin-top:10px">Progress is stored on this device. <strong>Integration point:</strong> sync to Supabase learner profile.</p>
+    </section>
+
+    <section class="card section">
+      <div class="kicker">Quick Start</div>
+      <h2>How it works</h2>
+      <ol style="margin:8px 0 0 18px;color:var(--muted)">
+        <li>Pick a grade above.</li>
+        <li>Open Weeks 1–10. Each week covers all five CAPS content areas.</li>
+        <li>Tick activities to mark complete – progress saves automatically.</li>
+      </ol>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">Start Learning</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">View Pricing</button>
+      </div>
+    </section>
+  </div>
+
+  <section id="curriculum" class="card section" style="margin-top:16px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <h2 style="margin:0">Grade <span id="currentGradeLabel">R</span> • Term 1 Weeks 1–10</h2>
+      <div class="progress-wrap" style="min-width:240px">
+        <div class="progress-bar" aria-label="Grade progress"><div id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">0%</div>
+      </div>
+    </div>
+    <div class="weeks" id="weeksContainer" style="margin-top:8px"></div>
+  </section>
+
+  <section id="pricing" class="pricing">
+    <h2 style="margin:18px 0 10px">Simple Pricing for Home & School</h2>
+    <div class="pricing-grid">
+      <div class="card price-card">
+        <div class="ribbon">Most Popular</div>
+        <h3>Monthly</h3>
+        <div class="price">R99 <small>/ month</small></div>
+        <ul>
+          <li>Full access Grades R–3</li>
+          <li>Progress tracking</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <!-- PAYFAST SANDBOX – Replace with your live PayFast credentials -->
+        <form action="https://sandbox.payfast.co.za/eng/process" method="post" style="margin-top:10px">
+          <input type="hidden" name="merchant_id" value="10000100">
+          <input type="hidden" name="merchant_key" value="46f0cd694581a">
+          <input type="hidden" name="return_url" value="https://yourdomain.co.za/payment-success">
+          <input type="hidden" name="cancel_url" value="https://yourdomain.co.za/payment-cancel">
+          <input type="hidden" name="notify_url" value="https://yourdomain.co.za/payment-notify">
+          <input type="hidden" name="amount" value="99.00">
+          <input type="hidden" name="item_name" value="LearnSA Monthly Subscription">
+          <input type="hidden" name="item_description" value="Monthly access to LearnSA Grades R-3">
+          <input type="hidden" name="subscription_type" value="1">
+          <input type="hidden" name="frequency" value="3">
+          <input type="hidden" name="cycles" value="0">
+          <!-- Replace with your live PayFast credentials -->
+          <button class="btn btn-primary" type="submit" style="width:100%">Subscribe with PayFast – R99/month</button>
+        </form>
+      </div>
+      <div class="card price-card" style="border:2px solid var(--sa-yellow)">
+        <div class="ribbon">Save 24%</div>
+        <h3>Annual</h3>
+        <div class="price">R899 <small>/ year</small></div>
+        <ul>
+          <li>Everything in Monthly</li>
+          <li>2 months free</li>
+          <li>Priority support</li>
+        </ul>
+        <form action="https://sandbox.payfast.co.za/eng/process" method="post" style="margin-top:10px">
+          <input type="hidden" name="merchant_id" value="10000100">
+          <input type="hidden" name="merchant_key" value="46f0cd694581a">
+          <input type="hidden" name="return_url" value="https://yourdomain.co.za/payment-success">
+          <input type="hidden" name="cancel_url" value="https://yourdomain.co.za/payment-cancel">
+          <input type="hidden" name="notify_url" value="https://yourdomain.co.za/payment-notify">
+          <input type="hidden" name="amount" value="899.00">
+          <input type="hidden" name="item_name" value="LearnSA Annual Subscription">
+          <input type="hidden" name="item_description" value="Annual access to LearnSA Grades R-3">
+          <input type="hidden" name="subscription_type" value="1">
+          <input type="hidden" name="frequency" value="6">
+          <input type="hidden" name="cycles" value="0">
+          <!-- Replace with your live PayFast credentials -->
+          <button class="btn btn-yellow" type="submit" style="width:100%">Subscribe with PayFast – R899/year</button>
+        </form>
+      </div>
+      <div class="card price-card">
+        <h3>School Licence</h3>
+        <div class="price">Custom</div>
+        <ul>
+          <li>Bulk learner accounts</li>
+          <li>Teacher dashboard & reports</li>
+          <li>POPIA compliant hosting (ZA)</li>
+        </ul>
+        <button class="btn btn-ghost" onclick="alert('Email sales@learnsa.co.za for a quote')">Request Quote</button>
+      </div>
+    </div>
+    <p class="helper" style="margin-top:8px">Payments use PayFast sandbox. Switch to live by updating merchant_id and merchant_key.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <strong>LearnSA</strong>
+        <div class="notice">CAPS-aligned supplementary activities. Not affiliated with the DBE.</div>
+      </div>
+      <div class="notice" style="max-width:520px">
+        <strong>POPIA Notice:</strong> We collect minimal account and learning progress data to provide the service. We do not sell personal information. Parents/guardians provide consent for learners under 18. For access, correction, or deletion requests, contact privacy@learnsa.co.za.
+      </div>
+    <div style="margin-top:14px;font-size:13px;opacity:.8">© 2026 LearnSA – CAPS-aligned, independently created</div>
+  </div>
+</footer>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="modal-card">
+    <h3 id="loginTitle">Sign in to LearnSA</h3>
+    <p class="helper">Supabase authentication. Replace keys in code below.</p>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="parent@example.co.za" autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="closeLogin()">Cancel</button>
+      <button class="btn btn-ghost" onclick="signUp()">Sign Up</button>
+      <button class="btn btn-primary" onclick="signIn()">Sign In</button>
+    </div>
+    <p class="helper" id="authMsg" style="margin-top:10px"></p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ---- Supabase ----
+const SUPABASE_URL = 'https://eaehjijbtswftqjsxwuf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZWhqaWpidHN3ZnRxanN4d3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTMwMjAsImV4cCI6MjA5Nzg2OTAyMH0.Ql2lcJaXshPyBMCAb4pkIqOvwcyNDVgtLyrx-p6wClA';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<script>
+// ---- Data ----
+const AREAS = [
+  {key:'numbers', name:'Numbers, Operations & Relationships'},
+  {key:'patterns', name:'Patterns, Functions & Algebra'},
+  {key:'shape', name:'Space & Shape'},
+  {key:'measurement', name:'Measurement'},
+  {key:'data', name:'Data Handling'}
+];
+
+const CURRICULUM = {
+  R: {
+    numbers: [
+      "• Touch-Count Trio: collect 3 spoons, touch each while saying 1,2,3.<br>• Finger Flash 1-3: parent holds up 1-3 fingers, child matches with counters.<br>• Number Hunt: find groups of 1, 2 and 3 objects around the house.",
+      "• Playdough Numbers 1-3: roll snakes to form 1, 2, 3.<br>• Clap Count: clap 1, 2 or 3 times, child holds up matching card.<br>• Washing Line 1-3: peg cards in order, fill the missing number.",
+      "• Five-Frame Egg Box: fill 5 spaces with beans, count 1-5.<br>• Bean Bottle Toss: toss 5 bottle tops into a bowl, count how many land in.<br>• Number Stories 4-5: act out '4 bananas, eat 1'.",
+      "• Staircase 1-5: build Duplo towers from 1 to 5 blocks high.<br>• Parking Lot 1-5: draw 5 bays, drive cars in while counting.<br>• Sand Tray 4-5: trace 4 and 5 with a finger, say the name.",
+      "• March to 7: march around lounge counting steps 1-7.<br>• Seven Stones: collect 7 pebbles, split into two groups in different ways.<br>• Domino Dots 6-7: match dominoes showing 6 and 7 spots.",
+      "• Handprint 7: trace hand (5 fingers) add 2 stickers to make 7.<br>• Ten-Frame Start: fill 7 of 10 egg spaces, count empty left.<br>• Hopscotch 1-7: hop on chalk numbers, say each aloud.",
+      "• Ten Bead String: thread 10 beads, count forward and back.<br>• Washing Pegs 1-10: peg number cards in order on a line.<br>• Make 10 Pairs: use 10 pasta shells to show 6+4, 7+3.",
+      "• Dice Roll to 10: roll two dice, build total with blocks (max 10).<br>• Number Bingo 1-10: cover called numbers with beans.<br>• Build and Knock Down: stack 10 blocks, count backwards as they fall.",
+      "• Market Money Play: 3 apples + 2 apples = ? use real fruit.<br>• Take-Away Train: 8 carriages, remove 3, count left.<br>• Lego Addition: 5 red + 4 blue bricks, count total.",
+      "• Picnic Story Sums: 'We packed 10 sandwiches, ate 6' act out.<br>• Split 10 Ways: use 10 buttons to show all ways to make 10.<br>• Frog Number Line: jump +2 from 5, jump -3 from 9."
+    ],
+    patterns: [
+      "• Copy Clap-Tap: clap-tap-clap-tap repeat for 1 minute.<br>• Bead AB: thread red-blue-red-blue.<br>• Sock Line: lay big sock-small sock-big-small.",
+      "• Drum Sound ABB: boom-boom-tap on a pot, repeat.<br>• Fruit AB: apple-banana-apple-banana on a plate.<br>• Movement Copy: jump-sit-jump-sit.",
+      "• Body ABB: clap-clap-stomp repeat.<br>• Block Colour: yellow-green-green-yellow-green-green.<br>• Peg Pattern: 1 peg left, 2 pegs right, repeat.",
+      "• Pattern Fix: parent makes red-blue-red-yellow, child corrects.<br>• Outdoor Leaf-Stone: leaf-stone-leaf-stone walk.<br>• Sticker Train: star-circle-star-circle.",
+      "• Growing Tower 1-2-3: add one block each step.<br>• AB Swap: make pattern then change colours.<br>• Kitchen Sounds: spoon-pot-spoon-pot.",
+      "• Pattern Detective: find stripes on clothes.<br>• Three-Step: jump-hop-spin repeat.<br>• Duplo ABBA: red-blue-blue-red.",
+      "• Extend Shape: circle-square-triangle-circle-square-?<br>• Shaker Pattern: shake-shake-pause.<br>• Snack AB: cracker-cheese-cracker-cheese.",
+      "• Missing Middle: hide part of pattern, guess.<br>• Step-Step-Hop Walk outside.<br>• Lego 2-red-1-yellow repeat.",
+      "• Growing Shells: piles of 1, then 2, then 3 shells.<br>• Create Your Own: child makes pattern, parent copies.<br>• Pattern Cards: match AB, AAB, ABB.",
+      "• Mixed Parade: combine sound + movement pattern.<br>• Spot Mistake Game.<br>• Nature Bracelet: thread leaves in repeating colours."
+    ],
+    shape: [
+      "• Circle Hunt: find 5 circles (lids, plates).<br>• Ball vs Box Test: which rolls?<br>• Position On/Under: teddy on chair, under table.",
+      "• Square Hunt: tiles, windows.<br>• Feely Bag Sphere: feel ball, say 'round'.<br>• Behind/In Front: hide toy behind and in front of couch.",
+      "• Triangle Sticks: make triangles with 3 sticks.<br>• Box Collection: collect cuboids (boxes), stack.<br>• Next To Game: put cup next to plate.",
+      "• Sort 2D: circles, squares, triangles into hoops.<br>• Roll or Slide: test ball, box, tin.<br>• Obstacle Over/Under/Through tunnel.",
+      "• Build House Picture: 1 square + 1 triangle.<br>• 3D Hunt: sphere (orange) vs cube (dice).<br>• Left/Right Hands: sticker on right, wave.",
+      "• Shape Tracing: trace lids and boxes in sand.<br>• Tall/Short Towers with boxes.<br>• Inside/Outside: toys inside basket vs outside.",
+      "• Rectangle Discovery: find doors, books longer than squares.<br>• Cylinder Hunt: tins, toilet rolls.<br>• Follow Directions: 2 steps forward, 1 back.",
+      "• Shape Rubbings: crayon over coins.<br>• Match 3D to Photo: ball to sphere picture.<br>• Positional Story: teddy on bed, under blanket.",
+      "• Combine Shapes: two triangles make a square.<br>• Recycle Robot: build from 3D boxes.<br>• Maze Walk: left, right to find toy.",
+      "• I-Spy 3D: 'I spy something round that rolls'.<br>• Symmetry Fold: paint one half of paper heart, fold.<br>• Obstacle Positions: use on, under, between to guide."
+    ],
+    measurement: [
+      "• Tall-Short Towers: build two, compare words.<br>• Day/Night Sort: sort brushing teeth vs pyjamas pictures.<br>• Heavy/Light Hands: heft apple vs feather.",
+      "• Hand Span Table: measure desk width in hands.<br>• Long-Short Ribbons: order 3 ribbons.<br>• Full-Empty Cups: pour water, describe.",
+      "• Days Song: sing and point to calendar.<br>• Footstep Measure: steps across lounge.<br>• Balance Hanger: rice vs cotton wool.",
+      "• Compare Heights: who is taller in family.<br>• Scoop Capacity: how many spoons fill a mug?<br>• Routine Cards: breakfast-lunch-supper order.",
+      "• Block Length: how many Duplo long is book?<br>• Heft Fruit: orange heavier than grape.<br>• Day Parts Photos: morning, afternoon, evening.",
+      "• Pouring Station: order 3 bottles by most/least.<br>• Playdough Snakes: make long and short.<br>• Bedtime Clock: match 7pm to routine picture.",
+      "• Outdoor Steps: count steps to gate.<br>• Mass Kitchen: compare 1kg sugar vs 500g flour.<br>• Birthday Months: find on calendar.",
+      "• Egg Cup Race: how many egg cups fill a jug?<br>• Tallest Estimate: guess then build.<br>• O'clock Paper Clock: set wake-up time.",
+      "• String Measure: cut string as long as arm.<br>• Heft Bags: flour vs pillow.<br>• Yesterday/Today/Tomorrow with calendar.",
+      "• Estimate and Check: guess spoons of water in bowl.<br>• Longest Leaf Hunt: compare 3 leaves.<br>• Sand Timer Brushing: time 2 minutes."
+    ],
+    data: [
+      "• Colour Sort Socks: group whites, colours, count.<br>• Favourite Colour Vote: family sticker chart.<br>• Toy Sort: cars vs animals.",
+      "• Button Shape Sort: round vs square buttons.<br>• Weather Today: sunny/cloudy sticker.<br>• Fruit Bowl Count: apples vs bananas.",
+      "• Laundry by Owner: sort socks.<br>• Pet Pictograph: 1 picture = 1 pet type.<br>• Tally Boys/Girls at home.",
+      "• Snack Vote: crackers or fruit?<br>• Lego Colour Graph: stack bricks by colour.<br>• Shoe Sort: laces vs no laces.",
+      "• Button Size: big vs small, count.<br>• Transport Pictograph: walk/car.<br>• Mood Chart: happy/sad faces for week.",
+      "• Nature Sort: leaves vs stones.<br>• Favourite Story Vote: tally 3 books.<br>• Cutlery Sort: spoons vs forks.",
+      "• Recycle Sort: plastic vs paper.<br>• Ice Cream Pictograph: vanilla/chocolate/strawberry.<br>• Sleeves Sort: short vs long.",
+      "• Animal Toys: farm vs wild.<br>• Weekly Weather Chart: colour each day.<br>• Lunchbox Fruit Count.",
+      "• Shell Pattern Sort.<br>• Veggie Tally: carrots vs peas.<br>• Duplo Bar Graph: 1 brick = 1 vote.",
+      "• Toy Survey 5 Friends.<br>• Birthday Seasons Graph.<br>• Tell the Story: 'Most people chose...'"
+    ]
+  },
+  '1': {
+    numbers: [
+      "• Counting jars 1–5: fill five small cups with beans, touch each and say the number.<br>• Finger five-frames: hold up 1–5 fingers, match to dot cards you draw.<br>• Make 5 two ways: split 5 bottle tops into two groups (2+3 and 4+1), draw the splits.",
+      "• Number hop 1–5: lay cards on floor, hop and shout the number.<br>• Hide some of 5: put 5 pasta shells out, hide some under a cup, guess how many.<br>• Count back 5–1 while packing toys away.",
+      "• Egg-box ten-frame 6–10: fill spaces with stones, count and say.<br>• Salt tray 6–10: write each number with finger, say the name.<br>• Build 8 as 5+3 using counters, draw the two parts.",
+      "• Staircase 1–10: stack blocks increasing by one, count up and down.<br>• Make 10 pairs: use 10 pegs, split into 6+4, 7+3, write sums.<br>• Washing line missing: peg 1–10 with gaps, child fills.",
+      "• Bundle tens: make bundles of 10 ice-cream sticks, count 11–15.<br>• Floor number line 0–20: walk forward and back, say numbers.<br>• Toy car sums: 4 cars + 3 cars = ? act it out.",
+      "• Bonds of 10 memory: flip cards to find pairs that make 10.<br>• Take-away stories: 9 sweets eat 4, write 9−4=5.<br>• Show 17 as 1 ten and 7 ones with straws.",
+      "• Count in 2s to 30 hopping stones outside.<br>• Doubles to 10: use mirrors with counters (4+4).<br>• Build 26 with 2 tens and 6 ones.",
+      "• Number chart 1–50 race: find 23, 37, 49 quickly.<br>• Add tens: 30+20 with bundled straws.<br>• Money change: buy R7 item with R10, count back coins.",
+      "• Count in 25s using 25c coins to R1.<br>• Place value 134 demo: show 1 hundred, 3 tens, 4 ones with paper squares.<br>• Add 2-digit no carry: 23+45 using base-10 drawing.",
+      "• Hundred square puzzle: cover 5 numbers, guess from clues.<br>• Round to nearest 10 using a number-line hill.<br>• Mixed story problems within 20 (add and subtract)."
+    ],
+    patterns: [
+      "• Copy my AB clap: clap-stomp-clap-stomp, repeat, then you lead.<br>• Bead string red-blue-red-blue for 10 minutes, say colours aloud.<br>• Body pattern: stand-sit-stand-sit moving around the room.",
+      "• Drum pattern AAB: boom-boom-tap repeat, copy and extend.<br>• Bracelet Y-G-G-Y-G-G, thread and name the repeat.<br>• Laundry line: peg sock-shirt-sock-shirt in order.",
+      "• ABB pattern with spoons: small-small-big repeat across table.<br>• Colour code: draw circle-square-square.<br>• Movement copy: jump-hop-hop, jump-hop-hop.",
+      "• Mixed AB/AAB train: make a long Duplo train, child spots the repeat unit.<br>• Number line hops +1: start at 3, hop to 10, say each.<br>• Create your own 3-step pattern with blocks.",
+      "• Count on +1 pattern: 11,12,13... say the rule.<br>• Count back −1 from 15 to 5.<br>• Even steps: colour 2,4,6... on a 1–20 grid.",
+      "• Skip count 2s to 20 using paired socks.<br>• Skip count 5s to 50 with hand prints.<br>• Fill missing: 5,10,__,20,__,30.",
+      "• Odd and even sort 1–20 cards into two hoops.<br>• Growing tower: 1 block, then 2, then 3, then 4.<br>• Input-output +2 machine with drawn funnel.",
+      "• Count in 10s from any number: 4,14,24,34.<br>• Pattern mistake fix: 5,10,15,14,25 — circle error.<br>• Flow diagram −3: input 20→17→14.",
+      "• Multiples of 5 on number grid, colour pattern.<br>• Growing pattern with matchsticks: square, two squares.<br>• Complete table: in 12 out 15 (+3 rule).",
+      "• Constant difference +4: 7,11,15,19 continue.<br>• Create own rule and challenge parent.<br>• Geometric growing: add one triangle each step and count sides."
+    ],
+    shape: [
+      "• Hunt circles & squares: find five of each at home, tick them off.<br>• Feely bag: feel a shape and say 'curved' or 'straight sides'.<br>• Shape picture: make a house from cut-out squares and triangles.",
+      "• Teddy positions: place teddy on, under, behind, in front of chair.<br>• Roll or slide test: try ball vs box on a board, sort.<br>• Flour tray trace: draw circles, squares, triangles with a finger.",
+      "• Introduce rectangle: find doors, books, compare to square.<br>• 3D hunt: find a ball (sphere) and a box (cube) at home.<br>• Fold symmetry: fold paper hearts and circles, find the line.",
+      "• Corners count: trace square (4), triangle (3), rectangle (4).<br>• Build 3D tower with boxes, name cube and cuboid.<br>• Copy shape pictures on dot paper (simple house).",
+      "• Shape walk outdoors: spot circles (wheels), rectangles (gates).<br>• Sort 2D vs 3D objects into two baskets.<br>• Draw 2D shapes from memory, label sides.",
+      "• Find right angles in windows and books with corner card.<br>• Make shapes with playdough snakes.<br>• Describe 3D: 'cube has 6 flat faces'.",
+      "• Symmetry butterflies: paint one side, fold.<br>• Slide, flip, turn with paper shape on grid.<br>• Combine triangles to make squares and bigger triangles.",
+      "• 3D nets: cut and fold cube net from paper.<br>• Follow directions: 2 steps forward, turn left.<br>• Shape bingo using home objects.",
+      "• Faces-edges-vertices count for cube and triangular prism.<br>• Right angle hunt with set square.<br>• Viewpoints: draw mug from top and side.",
+      "• Parallel lines in burglar bars and book pages.<br>• Draw 2D shapes on grid to given size.<br>• Build model from photo using blocks."
+    ],
+    measurement: [
+      "• Tall or short towers: build two, compare and use the words.<br>• Hand spans: measure the kitchen table width, count how many.<br>• Day parts: sort three pictures into morning, afternoon, night.",
+      "• Heft test: compare apple vs naartjie, say heavier/lighter.<br>• Pour and compare: which mug holds more water?<br>• Days chant: sing days of week touching calendar squares.",
+      "• Footstep measure: how many child steps across the lounge?<br>• Full/empty bottles: fill three bottles different levels, order.<br>• Hour time: match digital 7:00 to picture of waking up.",
+      "• Compare ribbons: order short, shorter, shortest.<br>• Capacity race: how many egg cups fill a jug?<br>• Clock o'clock: set paper plate clock to 3 o'clock, 6 o'clock.",
+      "• Hand-span desk: estimate then measure.<br>• Compare mass: use coat-hanger balance with two bags.<br>• South African coins: sort R1, R2, R5, 10c, 20c, 50c.",
+      "• Tell time to hour on analogue and digital.<br>• Shopping R10: choose two items ≤R10, add totals.<br>• Order months using birthday chart.",
+      "• Half past: set clock to 7:30 breakfast picture.<br>• Mass kitchen scale: weigh 500g rice vs 1kg sugar.<br>• Calendar planning: find today's date, count days to weekend.",
+      "• Measure length in cm with ruler: pencil, book.<br>• Capacity ml: compare 250ml cup vs 1L bottle.<br>• Sequence daily timetable with time cards.",
+      "• Perimeter: walk around rug counting steps.<br>• Time problems: start 2:15, 30 mins later?<br>• Budget R50 tuck shop: choose items, total.",
+      "• Estimate then measure 3 objects in cm.<br>• Elapsed time TV show 45 mins.<br>• Change from R20 for two R8 items."
+    ],
+    data: [
+      "• Sock colour sort: group, count each pile, say which has most.<br>• Family vote: ask four people favourite fruit, add stickers to chart.<br>• Weather chart: draw today's weather and stick on a weekly strip.",
+      "• Toy tally cars vs dolls: make two columns with tally marks.<br>• Lunch fruit pictograph: draw one picture per child in group.<br>• Button sort by holes: count 2-hole vs 4-hole.",
+      "• Colour cars survey: watch from window 10 minutes, tally colours.<br>• Pictograph 1-to-1: one sticker = one car colour.<br>• Most/least: ask 'which colour won?'",
+      "• Pet pictograph: each child draws pet type, stick in columns.<br>• Interpret: which pet is most popular? fewest?<br>• Sort shapes by colour then count each.",
+      "• Favourite sandwich tally: cheese, jam, peanut butter.<br>• Draw bar with LEGO bricks (1 brick = 1 vote).<br>• Ask two questions about your graph.",
+      "• Weather month chart: sunny/cloudy/rainy each day.<br>• Mode talk: which weather happened most?<br>• Create simple tally sheet for family drinks.",
+      "• Transport pictograph (walk, car, taxi) using key 1 picture=2 learners.<br>• Interpret: how many more walk than taxi?<br>• Collect data: shoes with laces vs without.",
+      "• Favourite sport survey 10 friends.<br>• Draw bar graph with scale 1, label axes.<br>• Compare two classes' results (teacher reads).",
+      "• Tally and bar with scale 5: birds seen in garden.<br>• Interpret graphs: read between bars.<br>• Carroll diagram: sort by red/not red and round/not round.",
+      "• Design questionnaire: 3 yes/no questions.<br>• Present data as pictograph with key 1=5.<br>• Tell a story from your graph to family."
+    ]
+  },
+  '2': {
+    numbers: [
+      "• Hopscotch 1-50: chalk numbers outside, hop and say.<br>• Bundle Tens to 50: make 5 bundles of 10 ice-cream sticks.<br>• Floor Number Line 0-50: walk to called numbers.",
+      "• Place Value to 50: show 34 as 3 tens 4 ones with straws.<br>• Bonds to 20 Rockets: rapid 12+8, 15+5.<br>• Add No Carry: 23+14 using base-10 blocks.",
+      "• Hundred Square 1-100: find 68, 91 quickly.<br>• Count in 5s to 100 with 5c coins.<br>• Estimation Jar 100: guess beans, count in tens.",
+      "• Place Value 97: 9 tens 7 ones drawing.<br>• Subtract on Number Line: 58-23 with jumps.<br>• Money R50 Play: make R50 different ways.",
+      "• Count to 150: extend chart beyond 100.<br>• Bonds to 20 Speed Drill.<br>• Addition With Carry: 68+27 with counters.",
+      "• Place Value 143: 1 hundred, 4 tens, 3 ones.<br>• Doubles and Halves to 50: 24+24, half of 40.<br>• Shop to R75: add two price tags.",
+      "• Landmarks to 200: mark 100,150,200 on line.<br>• Subtract Across Ten: 102-8.<br>• Multiplication Intro 2s: pairs of socks to 20.",
+      "• Count in 3s to 150 with beads.<br>• Sharing: 24 sweets divide by 4 plates.<br>• Change from R100: buy R67 toy.",
+      "• Place Value 187: hundreds, tens, ones.<br>• Multiplication 5s and 10s: hand prints.<br>• Add Three Numbers: 34+25+12.",
+      "• Count in 4s to 200 marching.<br>• Taxi Story Problems within 100.<br>• Round to Nearest 10 using hill to 200."
+    ],
+    patterns: [
+      "• Skip 2s to 50: colour evens on grid.<br>• ABB/AAB with Lego.<br>• Odd/Even Hoops sort 1-50.",
+      "• Count Back 50-0 rocket.<br>• Growing Sticks +2 each time.<br>• Flow +3: 7 to 10 to 13.",
+      "• Skip 5s to 100 money walkway.<br>• Geometric Growing Squares.<br>• Rule: 10,20,30,40...",
+      "• Skip 10s from 4: 4,14,24…<br>• Table In 12 Out 17 (+5).<br>• Shape Repeat triangle-circle-square.",
+      "• Count 3s to 150 drum beats.<br>• Constant +4: 7,11,15…<br>• Missing: __,50,60,70.",
+      "• Back by 5s from 150.<br>• x2 Machine: 5 to 10, 8 to 16.<br>• Make Your Own Rule.",
+      "• Multiples of 4 to 200 colour.<br>• Growing Tower +3 blocks.<br>• Flow -6: 30 to 24 to 18.",
+      "• Pattern -10: 98,88,78…<br>• Doubling 2,4,8,16.<br>• Movement Pattern for family.",
+      "• Skip 25s to 200 with Rands.<br>• Mixed +7 then -2 table.<br>• Border Pattern with tiles.",
+      "• Challenge to 200.<br>• Describe Rule aloud.<br>• Nature Growing Pattern +1."
+    ],
+    shape: [
+      "• 3D Hunt: cube dice, sphere orange, cylinder tin.<br>• Draw 2D accurately.<br>• Mirror Symmetry fold.",
+      "• Faces of Cube: count 6.<br>• Playdough 3D: sphere, cube.<br>• Slide Flip Turn on grid.",
+      "• Name Cylinder and Cone: can, party hat.<br>• Sort by Curved/Flat.<br>• Copy on dot paper.",
+      "• Cuboid Tower cereal boxes.<br>• Symmetry Butterflies paint.<br>• Treasure Map left/right.",
+      "• Cube Net cut and fold.<br>• Right Angles Hunt corners.<br>• Combine 2D to make pictures.",
+      "• Pyramid vertices/edges.<br>• Tessellate squares.<br>• Viewpoints mug top/side.",
+      "• Triangular Prism Hunt Toblerone.<br>• Symmetry in Leaves.<br>• Draw shape 2x bigger.",
+      "• Toothpick Skeletons of 3D.<br>• Quarter Turns car.<br>• Sort by sides 3,4,5,6.",
+      "• Recycle 3D Village.<br>• Complete other half butterfly.<br>• Robot Commands navigate.",
+      "• Parallel Lines fences.<br>• Geoboard bands (draw).<br>• 3D Bingo at home."
+    ],
+    measurement: [
+      "• Length cm: measure pencil, book.<br>• Mass kg: 1kg flour vs 500g rice.<br>• Time Quarter Past 3:15.",
+      "• Capacity Litres: 250ml cups to 1L.<br>• Money R20 five ways.<br>• Calendar count to month end.",
+      "• Perimeter Steps around mat.<br>• Change R50 buy R32.<br>• Half Past and Quarter To.",
+      "• Measure >50cm height.<br>• Mass kg weigh fruit bag.<br>• Hot/Cold water describe.",
+      "• Convert 100cm=1m rope.<br>• Elapsed 30 mins from 4:15.<br>• Budget R75 tuck shop.",
+      "• Area with sticky notes cover book.<br>• Capacity estimate jugs.<br>• Analogue to digital 7:30.",
+      "• Measure mm coin thickness.<br>• Mass add 250g+250g.<br>• Plan day sequence times.",
+      "• Perimeter grid 4x4 square.<br>• Money R100 different ways.<br>• Stopwatch 1-minute tasks.",
+      "• Compare 3 toys estimate then measure.<br>• Capacity 5ml spoon vs teaspoon.<br>• Start 2:45 +45 mins.",
+      "• Measure to 200cm items.<br>• Shopping Change R100 challenge.<br>• Calendar days to holiday."
+    ],
+    data: [
+      "• Pet Survey tally dog/cat/bird/fish.<br>• Pictograph 1=1 draw stickers.<br>• Most/Least questions.",
+      "• Fruit Tally 10 family.<br>• Lego Block Graph 1 brick=1.<br>• Interpret winner.",
+      "• Transport Pictograph 1=2 learners.<br>• Bar Graph scale 1.<br>• Compare two classes.",
+      "• Weather Month tally sunny/rainy.<br>• Bar Graph scale 2 birds.<br>• Find mode.",
+      "• Shoe Survey takkies/sandals.<br>• Pictograph key 1=2.<br>• How many more?",
+      "• Sport Survey 15 responses.<br>• Carroll Diagram bounce/red.<br>• Present to family.",
+      "• Lunch Pictograph vetkoek vs sandwich.<br>• Bar scale 5.<br>• Interpret between.",
+      "• Toy Colour Pictograph.<br>• Tally to table.<br>• Write two true statements.",
+      "• Books Read 4 weeks tally.<br>• Bar graph scale 2.<br>• Predict next week.",
+      "• Design Questionnaire 3 Qs.<br>• Collect 10 people.<br>• Present poster graph."
+    ]
+  },
+  '3': {
+    numbers: [
+      "• Number Line 0-200 sprint.<br>• Place Value 156: 1 hundred 5 tens 6 ones.<br>• Bonds to 30 rapid: 17+13.",
+      "• Count 50s to 200 with R50 notes.<br>• Add carrying: 78+56.<br>• Subtract 92-47 breaking.",
+      "• Skip 100s to 500, then 25s.<br>• Place Value 374 expanded 300+70+4.<br>• Money R100 two items.",
+      "• Count 450-500 forwards/back.<br>• 3-Digit No Carry 213+145.<br>• Bonds to 30 all pairs.",
+      "• Build 1000 with 10 hundreds.<br>• Add with Carry 456+278.<br>• Multiplication 2 and 4 arrays egg box.",
+      "• Place Value 802 digit values.<br>• Subtract Borrowing 523-187.<br>• Tables 3 and 5 skip songs.",
+      "• Count in 10s/20s to 1000.<br>• Division Sharing 36 divide 4 sweets.<br>• Tables 6 and 7 arrays.",
+      "• Round to nearest 10 and 100.<br>• Division Grouping 64 divide 8.<br>• Tables 8 and 9 finger tricks.",
+      "• Mixed 345+226-150.<br>• Fractions halves/thirds/quarters cut roti.<br>• Multiply by 10 pattern.",
+      "• Thousands Intro 1 024 with blocks.<br>• Fraction of Set 1/4 of 20 marbles.<br>• Market Word Problems money to R100."
+    ],
+    patterns: [
+      "• Skip 20s to 200 colour.<br>• Growing +15: 5,20,35…<br>• Flow x2+1: 4 to 9 to 19.",
+      "• Count back 10s from 200.<br>• Rule -20: 180,160,140…<br>• Geometric add 3 squares.",
+      "• Multiples 25 to 500 money.<br>• Table +99: 101 to 200.<br>• Describe rule in words.",
+      "• Skip 50s to 500.<br>• Constant +7 to 500.<br>• Diagonal number grid.",
+      "• Count 100s to 1000.<br>• Two ops x2 then -5.<br>• Missing 650,700,__,800.",
+      "• Multiples 3 and 4 to 300.<br>• Fraction pattern 1/2,1,1 and 1/2…<br>• Create own rule to 1000.",
+      "• Skip 125s to 1000 jug.<br>• Flow divide 2: 500 to 250 to 125.<br>• Reverse rule detective.",
+      "• Pattern 9s to 900.<br>• +100, -20 repeat.<br>• Table +50 In 250 Out 300.",
+      "• Count 6s and 8s to 500.<br>• Growing perimeter squares.<br>• Spot error.",
+      "• Pattern Museum to 1000.<br>• Two rules same sequence.<br>• Continue to nearest 1000."
+    ],
+    shape: [
+      "• Count Faces/Edges/Vertices cube, cuboid, prism.<br>• Right Angles Hunt 10 corners.<br>• Draw 2D to size on grid.",
+      "• Prisms vs Pyramids packaging.<br>• Lines of Symmetry square/rectangle/triangle.<br>• Draw top/side views Lego.",
+      "• Parallel and Perpendicular burglar bars.<br>• Tessellate triangles.<br>• Net square pyramid.",
+      "• Compare > < right angle wedge.<br>• Draw 5cm square.<br>• Symmetry Art complete half.",
+      "• Hexagonal Prism vertices?<br>• Translate shape 3 right 2 up.<br>• Build cube from 6 squares.",
+      "• Grid coordinates A3.<br>• Rotational symmetry windmill.<br>• Find cube nets.",
+      "• Build 3D Village nets.<br>• Order 5 angles.<br>• Mirror paint symmetry.",
+      "• Nets cylinder and cone.<br>• Parallel in SA flag lines.<br>• Enlarge x2 on grid.",
+      "• Front/side/top of stack.<br>• Symmetry Ndebele patterns.<br>• Classify quadrilaterals.",
+      "• Build model 5 shapes label.<br>• Map route using turns.<br>• Shape challenge cards."
+    ],
+    measurement: [
+      "• Length mm/cm/m pencil 145mm.<br>• Perimeter square measure add.<br>• Time to minute 7:23.",
+      "• Convert 2m35cm=235cm.<br>• Area counting 1cm squares.<br>• Elapsed 15:10 +45 mins.",
+      "• Perimeter rectangle table.<br>• Capacity 1.5L=1500ml.<br>• Mass 2kg potatoes.",
+      "• Estimate then measure 5 objects.<br>• Area hand outline squares.<br>• Plan weekly timetable.",
+      "• Perimeter L-shape.<br>• Convert 3L juice party.<br>• Budget R100 snacks.",
+      "• Area rectangle l x w.<br>• Mass 1kg250g+750g.<br>• Read bus timetable.",
+      "• Measure nearest mm.<br>• Perimeter garden design.<br>• Elapsed overnight 21:30-06:15.",
+      "• Area half squares count.<br>• Capacity 250ml cups from 2L.<br>• Convert 2h15m=135min.",
+      "• Perimeter vs Area same P different A.<br>• Mass shopping compare.<br>• SA time zones same.",
+      "• Measure room for rug.<br>• Paint area wall rectangles.<br>• Change and time combo."
+    ],
+    data: [
+      "• Survey SA sports teams tally 20.<br>• Bar Graph scale 2.<br>• Difference top two.",
+      "• Pictograph key 1=5 pets.<br>• Find mode.<br>• Write 3 questions.",
+      "• Transport survey 30.<br>• Double bar boys vs girls.<br>• Compare sets.",
+      "• 4-Week Weather table to bar scale5.<br>• Interpret trends.<br>• Predict.",
+      "• Questionnaire healthy snacks.<br>• Create tally sheet.<br>• Collect and organise.",
+      "• Bar scale10 books read.<br>• Pictograph half symbols.<br>• Summary paragraph.",
+      "• Coin toss 50 tally.<br>• Bar and pie draw.<br>• Chance likely/unlikely.",
+      "• Waste audit categories.<br>• Poster with graph.<br>• Suggest improvement.",
+      "• Interpret newspaper graph.<br>• Read scale.<br>• Critique misleading?",
+      "• Full cycle: question, collect 30, graph scale5/10, interpret, present.<br>• Digital Sheets note.<br>• Reflect learning."
+    ]
+  }
+};
+
+// ---- State ----
+const PROGRESS_KEY = 'learnsa_progress_v1';
+const USER_KEY = 'learnsa_user_v1';
+const GRADE_KEY = 'learnsa_grade_v1';
+
+let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+let currentGrade = localStorage.getItem(GRADE_KEY) || 'R';
+let user = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+
+// ---- Supabase ----
+const SUPABASE_URL = 'https://your-project.supabase.co'; // Replace with your live Supabase URL
+const SUPABASE_ANON_KEY = 'your-anon-key'; // Replace with your live anon key
+let supabaseClient = null;
+try {
+  if (typeof window.supabase !== 'undefined' && !SUPABASE_URL.includes('your-project')) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch(e){ console.warn('Supabase not configured'); }
+
+/*
+RECOMMENDED SUPABASE DATABASE SCHEMA FOR SCHOOL LICENCES
+-- Run in Supabase SQL Editor. Enable Row Level Security after creating.
+
+CREATE TABLE public.profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email text UNIQUE,
+  full_name text,
+  role text CHECK (role IN ('parent','teacher','admin')) DEFAULT 'parent',
+  school_id uuid REFERENCES public.schools(id),
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE public.schools (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  emis_number text,
+  province text CHECK (province IN ('EC','FS','GP','KZN','LP','MP','NC','NW','WC')),
+  contact_email text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE public.licences (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id uuid NOT NULL REFERENCES public.schools(id) ON DELETE CASCADE,
+  seats integer NOT NULL,
+  start_date date NOT NULL,
+  end_date date NOT NULL,
+  status text CHECK (status IN ('active','expired','cancelled')) DEFAULT 'active',
+  notes text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE public.subscriptions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  payfast_token text,
+  plan text CHECK (plan IN ('monthly','annual')) NOT NULL,
+  amount numeric(10,2),
+  status text CHECK (status IN ('active','past_due','cancelled','trialing')) DEFAULT 'active',
+  current_period_end timestamptz,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE public.progress (
+  id bigserial PRIMARY KEY,
+  profile_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  grade text CHECK (grade IN ('R','1','2','3')) NOT NULL,
+  activity_id text NOT NULL,
+  completed boolean DEFAULT true,
+  completed_at timestamptz DEFAULT now(),
+  UNIQUE(profile_id, activity_id)
+);
+
+-- Indexes for speed
+CREATE INDEX ON public.progress(profile_id, grade);
+CREATE INDEX ON public.licences(school_id, status);
+
+-- Example RLS: learners see only their progress
+-- ALTER TABLE public.progress ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "own_progress" ON public.progress FOR SELECT USING (auth.uid() = profile_id);
+*/
+
+// ---- UI refs ----
+const weeksContainer = document.getElementById('weeksContainer');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const currentGradeLabel = document.getElementById('currentGradeLabel');
+const dashGrid = document.getElementById('dashGrid');
+const loginBtn = document.getElementById('loginBtn');
+const welcome = document.getElementById('welcome');
+const loginModal = document.getElementById('loginModal');
+
+function saveProgress(){
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+}
+
+function setGrade(g){
+  currentGrade = g;
+  localStorage.setItem(GRADE_KEY, g);
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.grade===g);
+    b.setAttribute('aria-selected', b.dataset.grade===g ? 'true':'false');
+  });
+  currentGradeLabel.textContent = g;
+  renderWeeks();
+  updateProgress();
+}
+
+function activityId(grade, week, key){ return `${grade}-${week}-${key}`; }
+
+function renderWeeks(){
+  weeksContainer.innerHTML = '';
+  for(let w=1; w<=10; w++){
+    const weekEl = document.createElement('div');
+    weekEl.className = 'week';
+    weekEl.innerHTML = `
+      <button class="week-header" aria-expanded="false">
+        Week ${w} <span>All 5 CAPS areas</span>
+      </button>
+      <div class="week-content"><div class="activities"></div></div>
+    `;
+    const activitiesWrap = weekEl.querySelector('.activities');
+    AREAS.forEach(area=>{
+      const id = activityId(currentGrade, w, area.key);
+      const desc = CURRICULUM[currentGrade][area.key][w-1];
+      const done = !!progress[id];
+      const act = document.createElement('div');
+      act.className = 'activity' + (done?' done':'');
+      act.innerHTML = `
+        <input type="checkbox" id="${id}" ${done?'checked':''} aria-label="Mark complete">
+        <div>
+          <h4>${area.name} <span class="badge">${currentGrade==='R'?'Grade R':'Gr '+currentGrade}</span></h4>
+          <p>${desc}</p>
+        </div>
+      `;
+      const cb = act.querySelector('input');
+      cb.addEventListener('change', ()=>{
+        progress[id] = cb.checked;
+        act.classList.toggle('done', cb.checked);
+        saveProgress();
+        updateProgress();
+        updateDashboard();
+      });
+      activitiesWrap.appendChild(act);
+    });
+    const header = weekEl.querySelector('.week-header');
+    header.addEventListener('click', ()=>{
+      const open = weekEl.classList.toggle('open');
+      header.setAttribute('aria-expanded', open?'true':'false');
+    });
+    weeksContainer.appendChild(weekEl);
+  }
+}
+
+function updateProgress(){
+  const total = 10 * AREAS.length;
+  let done = 0;
+  for(let w=1; w<=10; w++){
+    AREAS.forEach(a=>{
+      if(progress[activityId(currentGrade,w,a.key)]) done++;
+    });
+  }
+  const pct = Math.round(done/total*100);
+  progressFill.style.width = pct + '%';
+  progressText.textContent = pct + '%';
+}
+
+function updateDashboard(){
+  dashGrid.innerHTML = '';
+  ['R','1','2','3'].forEach(g=>{
+    let done=0; const total=50;
+    for(let w=1; w<=10; w++) AREAS.forEach(a=>{ if(progress[activityId(g,w,a.key)]) done++; });
+    const pct = Math.round(done/total*100);
+    const card = document.createElement('div');
+    card.className='dash-card';
+    card.innerHTML = `
+      <h3>Grade ${g}</h3>
+      <div class="mini-progress" aria-label="Grade ${g} progress"><span style="width:${pct}%"></span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px"><small>${done}/${total} activities</small><strong>${pct}%</strong></div>
+    `;
+    dashGrid.appendChild(card);
+  });
+}
+
+// ---- Auth ----
+function openLogin(){ loginModal.classList.remove('hidden'); document.getElementById('authMsg').textContent=''; }
+function closeLogin(){ loginModal.classList.add('hidden'); }
+
+async function signUp(){
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const msg = document.getElementById('authMsg');
+  if(!email || !password){ msg.textContent='Enter email and password'; return; }
+  if(supabaseClient){
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+    if(error){ msg.textContent = error.message; }
+    else { msg.textContent = 'Check your email to confirm, then sign in.'; }
+  } else {
+    user = { email };
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    closeLogin(); refreshAuthUI();
+    msg.textContent = 'Demo account created (no Supabase).';
+  }
+}
+
+async function signIn(){
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const msg = document.getElementById('authMsg');
+  if(!email || !password){ msg.textContent='Enter email and password'; return; }
+  if(supabaseClient){
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if(error){ msg.textContent = error.message; return; }
+    user = { email: data.user.email, id: data.user.id };
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    closeLogin(); refreshAuthUI();
+  } else {
+    user = { email };
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    closeLogin(); refreshAuthUI();
+  }
+}
+
+async function signOut(){
+  if(supabaseClient){ await supabaseClient.auth.signOut(); }
+  user = null;
+  localStorage.removeItem(USER_KEY);
+  refreshAuthUI();
+}
+
+function refreshAuthUI(){
+  if(user && user.email){
+    welcome.textContent = `Welcome, ${user.email}`;
+    welcome.style.display='inline';
+    loginBtn.textContent='Sign out';
+  } else {
+    welcome.style.display='none';
+    loginBtn.textContent='Login';
+  }
+}
+
+loginBtn.addEventListener('click', async ()=>{
+  if(user && user.email){ await signOut(); } else { openLogin(); }
+});
+loginModal.addEventListener('click', (e)=>{ if(e.target===loginModal) closeLogin(); });
+
+// Restore session
+if(supabaseClient){
+  supabaseClient.auth.getSession().then(({data})=>{
+    if(data.session?.user){
+      user = { email: data.session.user.email, id: data.session.user.id };
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      refreshAuthUI();
+    }
+  });
+}
+
+// ---- Init ----
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> setGrade(btn.dataset.grade));
+});
+
+setGrade(currentGrade);
+updateDashboard();
+refreshAuthUI();
+
+setTimeout(()=>{
+  const first = document.querySelector('.week');
+  if(first){ first.classList.add('open'); first.querySelector('.week-header').setAttribute('aria-expanded','true'); }
+}, 0);
+</script>
+
+<!-- Interactive Activity Player - 600 activities -->
+<div id="activityModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;max-width:640px;width:100%;border-radius:20px;padding:24px;box-shadow:0 25px 70px rgba(0,0,0,.4);max-height:90vh;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:start">
+      <h3 id="modalTitle" style="margin:0;color:#002395;font-size:22px"></h3>
+      <button onclick="closeActivity()" style="background:none;border:0;font-size:28px;color:#64748b;cursor:pointer">×</button>
+    </div>
+    <p id="modalInstruction" style="color:#475569;margin:8px 0 4px;font-size:14px;font-style:italic"></p>
+    <p id="modalDesc" style="color:#334155;margin:0 0 16px;font-size:13px"></p>
+    <div id="modalGame" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:18px;min-height:180px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+      <div id="gameStats" style="font-size:12px;color:#64748b">Attempts: 0</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="closeActivity()" style="padding:9px 14px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;font-weight:600;cursor:pointer">Close</button>
+        <button id="modalDoneBtn" onclick="completeActivity()" disabled style="padding:9px 16px;border:0;border-radius:9px;background:#007A4D;color:#fff;font-weight:700;opacity:.5;cursor:not-allowed">Mark Done ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentActivityEl = null;
+let gameStartTime = 0;
+let attempts = 0;
+let gameSolved = false;
+
+function openActivity(el){
+  currentActivityEl = el;
+  attempts = 0;
+  gameSolved = false;
+  gameStartTime = Date.now();
+  
+  const area = el.dataset.area;
+  const grade = el.dataset.grade;
+  const week = el.dataset.week;
+  const part = el.dataset.part;
+  const title = el.querySelector('h4').innerText;
+  const desc = el.querySelector('p').innerText;
+  
+  document.getElementById('modalTitle').innerText = title;
+  document.getElementById('modalDesc').textContent = desc;
+  document.getElementById('modalDoneBtn').disabled = true;
+  document.getElementById('modalDoneBtn').style.opacity = '.5';
+  document.getElementById('modalDoneBtn').style.cursor = 'not-allowed';
+  document.getElementById('gameStats').textContent = 'Attempts: 0';
+  
+  const instructions = {
+    numbers: 'Count carefully, then type the answer.',
+    patterns: 'Look at the pattern. Choose what comes next.',
+    shape: 'Tap all shapes that match the instruction.',
+    measurement: 'Drag to put in order from smallest to biggest.',
+    data: 'Tap to vote until you reach the target.'
+  };
+  document.getElementById('modalInstruction').textContent = instructions[area] || 'Follow the instructions and try your best.';
+  
+  const gameDiv = document.getElementById('modalGame');
+  gameDiv.innerHTML = '';
+  
+  if(area==='numbers') renderNumbersGame(gameDiv, grade, week, part);
+  else if(area==='patterns') renderPatternsGame(gameDiv, grade, week, part);
+  else if(area==='shape') renderShapeGame(gameDiv, grade, week, part);
+  else if(area==='measurement') renderMeasurementGame(gameDiv, grade, week, part);
+  else if(area==='data') renderDataGame(gameDiv, grade, week, part);
+  
+  document.getElementById('activityModal').style.display = 'flex';
+}
+
+function closeActivity(){ document.getElementById('activityModal').style.display='none'; }
+
+async function completeActivity(){
+  if(!gameSolved || !currentActivityEl) return;
+  
+  const cb = currentActivityEl.querySelector('input[type=checkbox]');
+  if(cb && !cb.checked){ cb.checked = true; cb.dispatchEvent(new Event('change', {bubbles:true})); }
+  
+  // Save to Supabase
+  const timeSpent = Math.round((Date.now() - gameStartTime)/1000);
+  const score = Math.max(100 - (attempts-1)*20, 20);
+  const data = {
+    grade: currentActivityEl.dataset.grade,
+    week: parseInt(currentActivityEl.dataset.week),
+    area: currentActivityEl.dataset.area,
+    activity_id: currentActivityEl.dataset.id,
+    score: score,
+    attempts: attempts,
+    time_spent_seconds: timeSpent
+  };
+  
+  try {
+    if(window.supabase && user){
+      data.profile_id = user.id;
+      await supabase.from('activity_attempts').insert(data);
+    }
+  } catch(e){ console.warn('Supabase save failed', e); }
+  
+  closeActivity();
+}
+
+function markSolved(){
+  gameSolved = true;
+  attempts++;
+  document.getElementById('gameStats').textContent = `Attempts: ${attempts} • Solved!`;
+  const btn = document.getElementById('modalDoneBtn');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  btn.style.cursor = 'pointer';
+}
+
+function incrementAttempt(){
+  attempts++;
+  document.getElementById('gameStats').textContent = `Attempts: ${attempts}`;
+}
+
+// --- GAME TEMPLATES WITH SHORT INSTRUCTIONS ---
+function renderNumbersGame(container, grade, week, part){
+  const levels = [
+    {max:10, op:'count'},
+    {max:20, op:'add'},
+    {max:20, op:'subtract'}
+  ];
+  const level = levels[(part-1)%3];
+  const target = Math.min(3 + Number(week) + Number(part)*2, level.max);
+  
+  if(level.op==='count'){
+    container.innerHTML = `<p style="font-weight:600;margin:0 0 10px">How many? Tap each item, then type.</p><div id="countArea" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div><div style="display:flex;gap:8px"><input id="ans" type="number" style="width:70px;padding:7px;border:1px solid #cbd5e1;border-radius:6px"><button id="chk" style="padding:7px 12px;background:#002395;color:#fff;border:0;border-radius:6px;font-weight:600">Check</button><span id="fb" style="font-weight:600;margin-left:6px"></span></div>`;
+    const area = container.querySelector('#countArea');
+    for(let i=0;i<target;i++){ const d=document.createElement('div'); d.textContent='🍎'; d.style.fontSize='30px'; d.style.cursor='pointer'; d.onclick=()=>d.style.opacity=d.style.opacity==='0.5'?'1':'0.5'; area.appendChild(d); }
+    container.querySelector('#chk').onclick=()=>{ incrementAttempt(); const v=Number(container.querySelector('#ans').value); const fb=container.querySelector('#fb'); if(v===target){fb.textContent='✓ Correct';fb.style.color='#007A4D';markSolved();} else {fb.textContent='Try again';fb.style.color='#d92d20';} };
+  } else if(level.op==='add'){
+    const a = Math.floor(target/2); const b = target-a;
+    container.innerHTML = `<p style="font-weight:600;margin:0 0 10px">Add: ${a} + ${b} = ?</p><input id="ans" type="number" style="width:70px;padding:7px;border:1px solid #cbd5e1;border-radius:6px"> <button id="chk" style="padding:7px 12px;background:#002395;color:#fff;border:0;border-radius:6px">Check</button> <span id="fb" style="font-weight:600;margin-left:6px"></span>`;
+    container.querySelector('#chk').onclick=()=>{ incrementAttempt(); const v=Number(container.querySelector('#ans').value); const fb=container.querySelector('#fb'); if(v===a+b){fb.textContent='✓';fb.style.color='#007A4D';markSolved();} else {fb.textContent='No';fb.style.color='#d92d20';} };
+  } else {
+    const a = target; const b = Math.floor(a/2);
+    container.innerHTML = `<p style="font-weight:600;margin:0 0 10px">Subtract: ${a} - ${b} = ?</p><input id="ans" type="number" style="width:70px;padding:7px;border:1px solid #cbd5e1;border-radius:6px"> <button id="chk" style="padding:7px 12px;background:#002395;color:#fff;border:0;border-radius:6px">Check</button> <span id="fb" style="font-weight:600"></span>`;
+    container.querySelector('#chk').onclick=()=>{ incrementAttempt(); const v=Number(container.querySelector('#ans').value); const fb=container.querySelector('#fb'); if(v===a-b){fb.textContent='✓';fb.style.color='#007A4D';markSolved();} else {fb.textContent='Try';fb.style.color='#d92d20';} };
+  }
+}
+
+function renderPatternsGame(container, grade, week, part){
+  const pats = [[['🔴','🔵'],2],[ [['🟡','🟢','🔵'],3] ],[[['⭐','⭐','⚪'],3]]];
+  const [pat,len]=pats[(part-1)%pats.length];
+  container.innerHTML=`<p style="font-weight:600;margin:0 0 10px">Complete the pattern</p><div id="seq" style="display:flex;gap:6px;font-size:28px;margin-bottom:10px"></div><div id="choices" style="display:flex;gap:8px"></div><div id="fb" style="margin-top:8px;font-weight:600"></div>`;
+  const seqDiv=container.querySelector('#seq'); const full=[...pat,...pat,...pat]; full.slice(0,5).forEach((s,i)=>{const d=document.createElement('div');d.textContent=i===4?'?':s;if(i===4)d.style.opacity='.4';seqDiv.appendChild(d);});
+  const next=full[5]; [...new Set(pat)].forEach(c=>{const b=document.createElement('button');b.textContent=c;b.style.fontSize='24px';b.style.padding='4px 10px';b.style.border='1px solid #cbd5e1';b.style.borderRadius='6px';b.onclick=()=>{incrementAttempt();const fb=container.querySelector('#fb');if(c===next){fb.textContent='✓ Correct';fb.style.color='#007A4D';seqDiv.lastChild.textContent=c;seqDiv.lastChild.style.opacity='1';markSolved();}else{fb.textContent='Try again';fb.style.color='#d92d20';}};container.querySelector('#choices').appendChild(b);});
+}
+
+function renderShapeGame(container, grade, week, part){
+  container.innerHTML=`<p style="font-weight:600;margin:0 0 10px">Tap all circles</p><div id="area" style="display:flex;flex-wrap:wrap;gap:10px;font-size:36px"></div><div id="fb" style="margin-top:8px;font-weight:600"></div>`;
+  const shapes=['⚪','⬜','🔺','🟦','⚪','⬜']; let need=0,found=0; shapes.forEach(s=>{if(s==='⚪')need++; const d=document.createElement('div');d.textContent=s;d.style.cursor='pointer';d.onclick=()=>{if(d.dataset.d) return; d.dataset.d=1; incrementAttempt(); if(s==='⚪'){d.style.background='#dcfce7';found++;} else {d.style.background='#fee2e2';} const fb=container.querySelector('#fb'); fb.textContent=`${found}/${need}`; if(found===need){fb.textContent='✓ All found';fb.style.color='#007A4D';markSolved();}}; container.querySelector('#area').appendChild(d);});
+}
+
+function renderMeasurementGame(container, grade, week, part){
+  container.innerHTML=`<p style="font-weight:600;margin:0 0 10px">Order shortest to tallest</p><div id="bars" style="display:flex;align-items:flex-end;gap:10px;height:120px"></div><button id="chk" style="margin-top:8px;padding:6px 12px;background:#002395;color:#fff;border:0;border-radius:6px">Check</button> <span id="fb" style="font-weight:600"></span>`;
+  const heights=[50,80,110].sort(()=>Math.random()-.5); const bars=container.querySelector('#bars'); heights.forEach(h=>{const b=document.createElement('div');b.style.width='40px';b.style.height=h+'px';b.style.background='#007A4D';b.draggable=true;b.dataset.h=h;bars.appendChild(b);}); let drag=null; bars.addEventListener('dragstart',e=>drag=e.target); bars.addEventListener('dragover',e=>{e.preventDefault(); const after=[...bars.children].find(c=>e.clientX<c.getBoundingClientRect().left+20); if(after) bars.insertBefore(drag,after); else bars.appendChild(drag);}); container.querySelector('#chk').onclick=()=>{incrementAttempt(); const order=[...bars.children].map(c=>+c.dataset.h); const sorted=[...order].sort((a,b)=>a-b); const fb=container.querySelector('#fb'); if(JSON.stringify(order)===JSON.stringify(sorted)){fb.textContent='✓';fb.style.color='#007A4D';markSolved();} else {fb.textContent='No';fb.style.color='#d92d20';}};
+}
+
+function renderDataGame(container, grade, week, part){
+  container.innerHTML=`<p style="font-weight:600;margin:0 0 10px">Vote 5 times</p><div id="btns" style="display:flex;gap:6px;margin-bottom:8px"></div><div id="chart" style="display:flex;align-items:flex-end;gap:10px;height:80px;border-left:2px solid #000;border-bottom:2px solid #000;padding:4px"></div><div>Total: <span id="tot">0</span>/5</div>`;
+  const opts=['A','B','C']; const cnt=[0,0,0]; const btns=container.querySelector('#btns'); opts.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o;b.onclick=()=>{if(cnt.reduce((a,b)=>a+b)>=5) return; cnt[i]++; incrementAttempt(); update();}; btns.appendChild(b);}); function update(){const chart=container.querySelector('#chart');chart.innerHTML='';cnt.forEach(c=>{const d=document.createElement('div');d.style.width='30px';d.style.height=c*15+'px';d.style.background='#002395';chart.appendChild(d);}); const t=cnt.reduce((a,b)=>a+b);container.querySelector('#tot').textContent=t; if(t>=5) markSolved();} update();
+}
+
+// Click handler
+document.addEventListener('click', e=>{
+  const act = e.target.closest('.activity');
+  if(act && !e.target.matches('input[type=checkbox]')) openActivity(act);
+});
+</script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+</body>
+</html>
