@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en-ZA">
 <head>
@@ -652,27 +653,35 @@ function renderWeeks(){
     `;
     const activitiesWrap = weekEl.querySelector('.activities');
     AREAS.forEach(area=>{
-      const id = activityId(currentGrade, w, area.key);
       const desc = CURRICULUM[currentGrade][area.key][w-1];
-      const done = !!progress[id];
-      const act = document.createElement('div');
-      act.className = 'activity' + (done?' done':'');
-      act.innerHTML = `
-        <input type="checkbox" id="${id}" ${done?'checked':''} aria-label="Mark complete">
-        <div>
-          <h4>${area.name} <span class="badge">${currentGrade==='R'?'Grade R':'Gr '+currentGrade}</span></h4>
-          <p>${desc}</p>
-        </div>
-      `;
-      const cb = act.querySelector('input');
-      cb.addEventListener('change', ()=>{
-        progress[id] = cb.checked;
-        act.classList.toggle('done', cb.checked);
-        saveProgress();
-        updateProgress();
-        updateDashboard();
+      const parts = desc.split('<br>').map(s=>s.replace(/^•\s*/,'').trim()).filter(Boolean);
+      parts.forEach((part, idx)=>{
+        const id = activityId(currentGrade, w, area.key) + '-' + (idx+1);
+        const done = !!progress[id];
+        const act = document.createElement('div');
+        act.className = 'activity' + (done?' done':'');
+        act.dataset.area = area.key;
+        act.dataset.week = w;
+        act.dataset.grade = currentGrade;
+        act.dataset.id = id;
+        act.dataset.part = idx+1;
+        act.innerHTML = `
+          <input type="checkbox" id="${id}" ${done?'checked':''} aria-label="Mark complete">
+          <div>
+            <h4>${area.name} <span class="badge">${currentGrade==='R'?'Grade R':'Gr '+currentGrade} • Act ${idx+1}</span></h4>
+            <p>${part}</p>
+          </div>
+        `;
+        const cb = act.querySelector('input');
+        cb.addEventListener('change', ()=>{
+          progress[id] = cb.checked;
+          act.classList.toggle('done', cb.checked);
+          saveProgress();
+          updateProgress();
+          updateDashboard();
+        });
+        activitiesWrap.appendChild(act);
       });
-      activitiesWrap.appendChild(act);
     });
     const header = weekEl.querySelector('.week-header');
     header.addEventListener('click', ()=>{
@@ -770,6 +779,27 @@ function refreshAuthUI(){
   }
 }
 
+// Load profile and lock grade for learners
+async function loadProfile(){
+  if(!user || !window.supabase) return;
+  try{
+    const { data } = await supabase.from('profiles').select('role,grade,full_name').eq('id', user.id).single();
+    if(data){
+      // Store for later
+      window.userProfile = data;
+      if(data.role === 'learner' && data.grade){
+        currentGrade = data.grade;
+        // hide grade selector
+        const pills = document.querySelector('.grade-pills');
+        if(pills) pills.style.display = 'none';
+        document.getElementById('gradeTitle').textContent = `Grade ${data.grade === 'R' ? 'R' : data.grade}`;
+        // personalize welcome
+        if(data.full_name) welcome.textContent = `Welcome, ${data.full_name}`;
+      }
+    }
+  }catch(e){ console.warn('profile load failed', e); }
+}
+
 loginBtn.addEventListener('click', async ()=>{
   if(user && user.email){ await signOut(); } else { openLogin(); }
 });
@@ -777,11 +807,14 @@ loginModal.addEventListener('click', (e)=>{ if(e.target===loginModal) closeLogin
 
 // Restore session
 if(supabaseClient){
-  supabaseClient.auth.getSession().then(({data})=>{
+  supabaseClient.auth.getSession().then(async ({data})=>{
     if(data.session?.user){
       user = { email: data.session.user.email, id: data.session.user.id };
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       refreshAuthUI();
+      await loadProfile();
+      setGrade(currentGrade);
+      updateDashboard();
     }
   });
 }
@@ -799,175 +832,6 @@ setTimeout(()=>{
   const first = document.querySelector('.week');
   if(first){ first.classList.add('open'); first.querySelector('.week-header').setAttribute('aria-expanded','true'); }
 }, 0);
-</script>
-
-<!-- Interactive Activity Player - 600 activities -->
-<div id="activityModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center;padding:16px">
-  <div style="background:#fff;max-width:640px;width:100%;border-radius:20px;padding:24px;box-shadow:0 25px 70px rgba(0,0,0,.4);max-height:90vh;overflow:auto">
-    <div style="display:flex;justify-content:space-between;align-items:start">
-      <h3 id="modalTitle" style="margin:0;color:#002395;font-size:22px"></h3>
-      <button onclick="closeActivity()" style="background:none;border:0;font-size:28px;color:#64748b;cursor:pointer">×</button>
-    </div>
-    <p id="modalInstruction" style="color:#475569;margin:8px 0 4px;font-size:14px;font-style:italic"></p>
-    <p id="modalDesc" style="color:#334155;margin:0 0 16px;font-size:13px"></p>
-    <div id="modalGame" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:18px;min-height:180px"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
-      <div id="gameStats" style="font-size:12px;color:#64748b">Attempts: 0</div>
-      <div style="display:flex;gap:8px">
-        <button onclick="closeActivity()" style="padding:9px 14px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;font-weight:600;cursor:pointer">Close</button>
-        <button id="modalDoneBtn" onclick="completeActivity()" disabled style="padding:9px 16px;border:0;border-radius:9px;background:#007A4D;color:#fff;font-weight:700;opacity:.5;cursor:not-allowed">Mark Done ✓</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-let currentActivityEl = null;
-let gameStartTime = 0;
-let attempts = 0;
-let gameSolved = false;
-
-function openActivity(el){
-  currentActivityEl = el;
-  attempts = 0;
-  gameSolved = false;
-  gameStartTime = Date.now();
-  
-  const area = el.dataset.area;
-  const grade = el.dataset.grade;
-  const week = el.dataset.week;
-  const part = el.dataset.part;
-  const title = el.querySelector('h4').innerText;
-  const desc = el.querySelector('p').innerText;
-  
-  document.getElementById('modalTitle').innerText = title;
-  document.getElementById('modalDesc').textContent = desc;
-  document.getElementById('modalDoneBtn').disabled = true;
-  document.getElementById('modalDoneBtn').style.opacity = '.5';
-  document.getElementById('modalDoneBtn').style.cursor = 'not-allowed';
-  document.getElementById('gameStats').textContent = 'Attempts: 0';
-  
-  const instructions = {
-    numbers: 'Count carefully, then type the answer.',
-    patterns: 'Look at the pattern. Choose what comes next.',
-    shape: 'Tap all shapes that match the instruction.',
-    measurement: 'Drag to put in order from smallest to biggest.',
-    data: 'Tap to vote until you reach the target.'
-  };
-  document.getElementById('modalInstruction').textContent = instructions[area] || 'Follow the instructions and try your best.';
-  
-  const gameDiv = document.getElementById('modalGame');
-  gameDiv.innerHTML = '';
-  
-  if(area==='numbers') renderNumbersGame(gameDiv, grade, week, part);
-  else if(area==='patterns') renderPatternsGame(gameDiv, grade, week, part);
-  else if(area==='shape') renderShapeGame(gameDiv, grade, week, part);
-  else if(area==='measurement') renderMeasurementGame(gameDiv, grade, week, part);
-  else if(area==='data') renderDataGame(gameDiv, grade, week, part);
-  
-  document.getElementById('activityModal').style.display = 'flex';
-}
-
-function closeActivity(){ document.getElementById('activityModal').style.display='none'; }
-
-async function completeActivity(){
-  if(!gameSolved || !currentActivityEl) return;
-  
-  const cb = currentActivityEl.querySelector('input[type=checkbox]');
-  if(cb && !cb.checked){ cb.checked = true; cb.dispatchEvent(new Event('change', {bubbles:true})); }
-  
-  // Save to Supabase
-  const timeSpent = Math.round((Date.now() - gameStartTime)/1000);
-  const score = Math.max(100 - (attempts-1)*20, 20);
-  const data = {
-    grade: currentActivityEl.dataset.grade,
-    week: parseInt(currentActivityEl.dataset.week),
-    area: currentActivityEl.dataset.area,
-    activity_id: currentActivityEl.dataset.id,
-    score: score,
-    attempts: attempts,
-    time_spent_seconds: timeSpent
-  };
-  
-  try {
-    if(window.supabase && user){
-      data.profile_id = user.id;
-      await supabase.from('activity_attempts').insert(data);
-    }
-  } catch(e){ console.warn('Supabase save failed', e); }
-  
-  closeActivity();
-}
-
-function markSolved(){
-  gameSolved = true;
-  attempts++;
-  document.getElementById('gameStats').textContent = `Attempts: ${attempts} • Solved!`;
-  const btn = document.getElementById('modalDoneBtn');
-  btn.disabled = false;
-  btn.style.opacity = '1';
-  btn.style.cursor = 'pointer';
-}
-
-function incrementAttempt(){
-  attempts++;
-  document.getElementById('gameStats').textContent = `Attempts: ${attempts}`;
-}
-
-// --- GAME TEMPLATES WITH SHORT INSTRUCTIONS ---
-function renderNumbersGame(container, grade, week, part){
-  const levels = [
-    {max:10, op:'count'},
-    {max:20, op:'add'},
-    {max:20, op:'subtract'}
-  ];
-  const level = levels[(part-1)%3];
-  const target = Math.min(3 + Number(week) + Number(part)*2, level.max);
-  
-  if(level.op==='count'){
-    container.innerHTML = `<p style="font-weight:600;margin:0 0 10px">How many? Tap each item, then type.</p><div id="countArea" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div><div style="display:flex;gap:8px"><input id="ans" type="number" style="width:70px;padding:7px;border:1px solid #cbd5e1;border-radius:6px"><button id="chk" style="padding:7px 12px;background:#002395;color:#fff;border:0;border-radius:6px;font-weight:600">Check</button><span id="fb" style="font-weight:600;margin-left:6px"></span></div>`;
-    const area = container.querySelector('#countArea');
-    for(let i=0;i<target;i++){ const d=document.createElement('div'); d.textContent='🍎'; d.style.fontSize='30px'; d.style.cursor='pointer'; d.onclick=()=>d.style.opacity=d.style.opacity==='0.5'?'1':'0.5'; area.appendChild(d); }
-    container.querySelector('#chk').onclick=()=>{ incrementAttempt(); const v=Number(container.querySelector('#ans').value); const fb=container.querySelector('#fb'); if(v===target){fb.textContent='✓ Correct';fb.style.color='#007A4D';markSolved();} else {fb.textContent='Try again';fb.style.color='#d92d20';} };
-  } else if(level.op==='add'){
-    const a = Math.floor(target/2); const b = target-a;
-    container.innerHTML = `<p style="font-weight:600;margin:0 0 10px">Add: ${a} + ${b} = ?</p><input id="ans" type="number" style="width:70px;padding:7px;border:1px solid #cbd5e1;border-radius:6px"> <button id="chk" style="padding:7px 12px;background:#002395;color:#fff;border:0;border-radius:6px">Check</button> <span id="fb" style="font-weight:600;margin-left:6px"></span>`;
-    container.querySelector('#chk').onclick=()=>{ incrementAttempt(); const v=Number(container.querySelector('#ans').value); const fb=container.querySelector('#fb'); if(v===a+b){fb.textContent='✓';fb.style.color='#007A4D';markSolved();} else {fb.textContent='No';fb.style.color='#d92d20';} };
-  } else {
-    const a = target; const b = Math.floor(a/2);
-    container.innerHTML = `<p style="font-weight:600;margin:0 0 10px">Subtract: ${a} - ${b} = ?</p><input id="ans" type="number" style="width:70px;padding:7px;border:1px solid #cbd5e1;border-radius:6px"> <button id="chk" style="padding:7px 12px;background:#002395;color:#fff;border:0;border-radius:6px">Check</button> <span id="fb" style="font-weight:600"></span>`;
-    container.querySelector('#chk').onclick=()=>{ incrementAttempt(); const v=Number(container.querySelector('#ans').value); const fb=container.querySelector('#fb'); if(v===a-b){fb.textContent='✓';fb.style.color='#007A4D';markSolved();} else {fb.textContent='Try';fb.style.color='#d92d20';} };
-  }
-}
-
-function renderPatternsGame(container, grade, week, part){
-  const pats = [[['🔴','🔵'],2],[ [['🟡','🟢','🔵'],3] ],[[['⭐','⭐','⚪'],3]]];
-  const [pat,len]=pats[(part-1)%pats.length];
-  container.innerHTML=`<p style="font-weight:600;margin:0 0 10px">Complete the pattern</p><div id="seq" style="display:flex;gap:6px;font-size:28px;margin-bottom:10px"></div><div id="choices" style="display:flex;gap:8px"></div><div id="fb" style="margin-top:8px;font-weight:600"></div>`;
-  const seqDiv=container.querySelector('#seq'); const full=[...pat,...pat,...pat]; full.slice(0,5).forEach((s,i)=>{const d=document.createElement('div');d.textContent=i===4?'?':s;if(i===4)d.style.opacity='.4';seqDiv.appendChild(d);});
-  const next=full[5]; [...new Set(pat)].forEach(c=>{const b=document.createElement('button');b.textContent=c;b.style.fontSize='24px';b.style.padding='4px 10px';b.style.border='1px solid #cbd5e1';b.style.borderRadius='6px';b.onclick=()=>{incrementAttempt();const fb=container.querySelector('#fb');if(c===next){fb.textContent='✓ Correct';fb.style.color='#007A4D';seqDiv.lastChild.textContent=c;seqDiv.lastChild.style.opacity='1';markSolved();}else{fb.textContent='Try again';fb.style.color='#d92d20';}};container.querySelector('#choices').appendChild(b);});
-}
-
-function renderShapeGame(container, grade, week, part){
-  container.innerHTML=`<p style="font-weight:600;margin:0 0 10px">Tap all circles</p><div id="area" style="display:flex;flex-wrap:wrap;gap:10px;font-size:36px"></div><div id="fb" style="margin-top:8px;font-weight:600"></div>`;
-  const shapes=['⚪','⬜','🔺','🟦','⚪','⬜']; let need=0,found=0; shapes.forEach(s=>{if(s==='⚪')need++; const d=document.createElement('div');d.textContent=s;d.style.cursor='pointer';d.onclick=()=>{if(d.dataset.d) return; d.dataset.d=1; incrementAttempt(); if(s==='⚪'){d.style.background='#dcfce7';found++;} else {d.style.background='#fee2e2';} const fb=container.querySelector('#fb'); fb.textContent=`${found}/${need}`; if(found===need){fb.textContent='✓ All found';fb.style.color='#007A4D';markSolved();}}; container.querySelector('#area').appendChild(d);});
-}
-
-function renderMeasurementGame(container, grade, week, part){
-  container.innerHTML=`<p style="font-weight:600;margin:0 0 10px">Order shortest to tallest</p><div id="bars" style="display:flex;align-items:flex-end;gap:10px;height:120px"></div><button id="chk" style="margin-top:8px;padding:6px 12px;background:#002395;color:#fff;border:0;border-radius:6px">Check</button> <span id="fb" style="font-weight:600"></span>`;
-  const heights=[50,80,110].sort(()=>Math.random()-.5); const bars=container.querySelector('#bars'); heights.forEach(h=>{const b=document.createElement('div');b.style.width='40px';b.style.height=h+'px';b.style.background='#007A4D';b.draggable=true;b.dataset.h=h;bars.appendChild(b);}); let drag=null; bars.addEventListener('dragstart',e=>drag=e.target); bars.addEventListener('dragover',e=>{e.preventDefault(); const after=[...bars.children].find(c=>e.clientX<c.getBoundingClientRect().left+20); if(after) bars.insertBefore(drag,after); else bars.appendChild(drag);}); container.querySelector('#chk').onclick=()=>{incrementAttempt(); const order=[...bars.children].map(c=>+c.dataset.h); const sorted=[...order].sort((a,b)=>a-b); const fb=container.querySelector('#fb'); if(JSON.stringify(order)===JSON.stringify(sorted)){fb.textContent='✓';fb.style.color='#007A4D';markSolved();} else {fb.textContent='No';fb.style.color='#d92d20';}};
-}
-
-function renderDataGame(container, grade, week, part){
-  container.innerHTML=`<p style="font-weight:600;margin:0 0 10px">Vote 5 times</p><div id="btns" style="display:flex;gap:6px;margin-bottom:8px"></div><div id="chart" style="display:flex;align-items:flex-end;gap:10px;height:80px;border-left:2px solid #000;border-bottom:2px solid #000;padding:4px"></div><div>Total: <span id="tot">0</span>/5</div>`;
-  const opts=['A','B','C']; const cnt=[0,0,0]; const btns=container.querySelector('#btns'); opts.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o;b.onclick=()=>{if(cnt.reduce((a,b)=>a+b)>=5) return; cnt[i]++; incrementAttempt(); update();}; btns.appendChild(b);}); function update(){const chart=container.querySelector('#chart');chart.innerHTML='';cnt.forEach(c=>{const d=document.createElement('div');d.style.width='30px';d.style.height=c*15+'px';d.style.background='#002395';chart.appendChild(d);}); const t=cnt.reduce((a,b)=>a+b);container.querySelector('#tot').textContent=t; if(t>=5) markSolved();} update();
-}
-
-// Click handler
-document.addEventListener('click', e=>{
-  const act = e.target.closest('.activity');
-  if(act && !e.target.matches('input[type=checkbox]')) openActivity(act);
-});
 </script>
 <script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
 </body>
