@@ -233,7 +233,7 @@ footer a{color:#fff}
         <div class="notice">CAPS-aligned supplementary activities. Not affiliated with the DBE.</div>
       </div>
       <div class="notice" style="max-width:520px">
-        <strong>POPIA Notice:</strong> We collect minimal account and learning progress data to provide the service. We do not sell personal information. Parents/guardians provide consent for learners under 18. For access, correction, or deletion requests, contact info@nextgridtechnologies.co.za.
+        <strong>POPIA Notice:</strong> We collect minimal account and learning progress data to provide the service. We do not sell personal information. Parents/guardians provide consent for learners under 18. For access, correction, or deletion requests, contact privacy@learnsa.co.za.
       </div>
     <div style="margin-top:14px;font-size:13px;opacity:.8">© 2026 LearnSA – CAPS-aligned, independently created</div>
   </div>
@@ -262,6 +262,12 @@ footer a{color:#fff}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ---- Supabase ----
+const SUPABASE_URL = 'https://eaehjijbtswftqjsxwuf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZWhqaWpidHN3ZnRxanN4d3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTMwMjAsImV4cCI6MjA5Nzg2OTAyMH0.Ql2lcJaXshPyBMCAb4pkIqOvwcyNDVgtLyrx-p6wClA';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
 <script>
 // ---- Data ----
 const AREAS = [
@@ -533,8 +539,8 @@ let currentGrade = localStorage.getItem(GRADE_KEY) || 'R';
 let user = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
 
 // ---- Supabase ----
-const SUPABASE_URL = 'https://eaehjijbtswftqjsxwuf.supabase.co'; // Replace with your live Supabase URL
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZWhqaWpidHN3ZnRxanN4d3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTMwMjAsImV4cCI6MjA5Nzg2OTAyMH0.Ql2lcJaXshPyBMCAb4pkIqOvwcyNDVgtLyrx-p6wClA'; // Replace with your live anon key
+const SUPABASE_URL = 'https://your-project.supabase.co'; // Replace with your live Supabase URL
+const SUPABASE_ANON_KEY = 'your-anon-key'; // Replace with your live anon key
 let supabaseClient = null;
 try {
   if (typeof window.supabase !== 'undefined' && !SUPABASE_URL.includes('your-project')) {
