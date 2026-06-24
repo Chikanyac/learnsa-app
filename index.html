@@ -800,6 +800,48 @@ setTimeout(()=>{
   if(first){ first.classList.add('open'); first.querySelector('.week-header').setAttribute('aria-expanded','true'); }
 }, 0);
 </script>
+
+<!-- Activity Player Modal -->
+<div id="activityModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;max-width:560px;width:92%;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.35);font-family:Inter,system-ui">
+    <h3 id="modalTitle" style="margin:0 0 8px;color:#002395;font-size:20px"></h3>
+    <div id="modalBody" style="color:#334155;line-height:1.65;font-size:15px;max-height:50vh;overflow:auto"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+      <button onclick="closeActivity()" style="padding:10px 16px;border:1px solid #e5e9f2;border-radius:10px;background:#f7f9fc;font-weight:600;cursor:pointer">Close</button>
+      <button onclick="completeActivity()" style="padding:10px 16px;border:0;border-radius:10px;background:#007A4D;color:#fff;font-weight:700;cursor:pointer">Mark Done ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentActivityEl = null;
+function openActivity(el, title, html) {
+  currentActivityEl = el;
+  document.getElementById('modalTitle').innerText = title;
+  document.getElementById('modalBody').innerHTML = html.replace(/•/g,'<br>• ');
+  document.getElementById('activityModal').style.display = 'flex';
+}
+function closeActivity(){ document.getElementById('activityModal').style.display='none'; }
+function completeActivity(){
+  if(currentActivityEl){
+    const cb = currentActivityEl.querySelector('input[type=checkbox]');
+    if(cb && !cb.checked){ cb.checked = true; cb.dispatchEvent(new Event('change', {bubbles:true})); }
+  }
+  closeActivity();
+}
+// Make activities clickable (ignore checkbox clicks)
+document.addEventListener('click', e => {
+  const act = e.target.closest('.activity, .activity-card, .act');
+  if(act && !e.target.matches('input[type=checkbox]')){
+    const titleEl = act.querySelector('h4, .act-title, strong');
+    const bodyEl = act.querySelector('p, .act-body, .content');
+    const title = titleEl ? titleEl.innerText : 'Activity';
+    const body = bodyEl ? bodyEl.innerHTML : act.innerHTML;
+    openActivity(act, title, body);
+  }
+});
+</script>
+
 <script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
 </body>
 </html>
