@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en-ZA">
 <head>
@@ -753,9 +754,6 @@ async function signIn(){
     user = { email: data.user.email, id: data.user.id };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     closeLogin(); refreshAuthUI();
-    await loadProfile();
-    setGrade(currentGrade);
-    updateDashboard();
   } else {
     user = { email };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -781,27 +779,6 @@ function refreshAuthUI(){
   }
 }
 
-// Load profile and lock grade for learners
-async function loadProfile(){
-  if(!user || !window.supabase) return;
-  try{
-    const { data } = await supabase.from('profiles').select('role,grade,full_name').eq('id', user.id).single();
-    if(data){
-      // Store for later
-      window.userProfile = data;
-      if(data.role === 'learner' && data.grade){
-        currentGrade = data.grade;
-        // hide grade selector
-        const pills = document.querySelector('.grade-pills');
-        if(pills) pills.style.display = 'none';
-        document.getElementById('gradeTitle').textContent = `Grade ${data.grade === 'R' ? 'R' : data.grade}`;
-        // personalize welcome
-        if(data.full_name) welcome.textContent = `Welcome, ${data.full_name}`;
-      }
-    }
-  }catch(e){ console.warn('profile load failed', e); }
-}
-
 loginBtn.addEventListener('click', async ()=>{
   if(user && user.email){ await signOut(); } else { openLogin(); }
 });
@@ -809,14 +786,11 @@ loginModal.addEventListener('click', (e)=>{ if(e.target===loginModal) closeLogin
 
 // Restore session
 if(supabaseClient){
-  supabaseClient.auth.getSession().then(async ({data})=>{
+  supabaseClient.auth.getSession().then(({data})=>{
     if(data.session?.user){
       user = { email: data.session.user.email, id: data.session.user.id };
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       refreshAuthUI();
-      await loadProfile();
-      setGrade(currentGrade);
-      updateDashboard();
     }
   });
 }
